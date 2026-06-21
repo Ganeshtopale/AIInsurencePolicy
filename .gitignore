@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+venv/
+.venv/
+env/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn/
+.pnpm/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+Desktop.ini
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.sqlite3
+*.db
+
+# Logs
+*.log
+/var/log/
+
+# Uploads
+/media/
+/staticfiles/
+
+# Alembic
+alembic/versions/*.pyc
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+.coverage/
+.cache
+coverage/
+
+# Sphinx
+docs/_build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Celery
+celerybeat-schedule.db
+celerybeat.pid
+
+# AWS
+.aws/

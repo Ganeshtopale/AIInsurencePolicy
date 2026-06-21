@@ -1,0 +1,575 @@
+================================================================================
+  FUNCTIONAL REQUIREMENTS DOCUMENT (FRD)
+  Project: PolicyBazar - AI Insurance Marketplace
+  Version: 1.0
+  Date: June 2026
+================================================================================
+
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+PolicyBazar is an AI-powered insurance comparison and policy recommendation 
+platform that connects customers with insurance policies through an intelligent 
+chatbot, real-time market comparison, dynamic provider/policy management, and a 
+seamless purchase flow. The platform supports three user roles: Customer, Agent, 
+and Admin, each with distinct capabilities. The system features real-time 
+WebSocket-based communication between customers and human agents, a LangChain-
+powered AI insurance advisor, file upload support for profile pictures and 
+provider logos, and comprehensive CRUD management for insurance providers and 
+policies.
+
+
+2. USER ROLES & PERMISSIONS
+--------------------------------------------------------------------------------
+
+2.1 Customer
+  - Register and login via email/username/phone or Google OAuth
+  - Browse and compare insurance policies across multiple providers
+  - Chat with AI insurance advisor for recommendations
+  - Chat with human agents in real-time via WebSocket
+  - Purchase insurance policies
+  - View purchase history
+  - Edit personal profile (name, phone, profile picture, age, city, income, 
+    family_size)
+  - Apply for jobs/careers
+  - Use password reset via OTP
+
+2.2 Agent
+  - All customer capabilities (if also a customer)
+  - View agent dashboard with conversation statistics
+  - Receive real-time WebSocket notifications for new customer messages
+  - View pending (unassigned) conversations
+  - Accept and own a conversation (exclusive - one agent per conversation)
+  - Chat with customers in real-time via WebSocket
+  - Close conversations (soft close - data never deleted)
+  - View conversation history (closed conversations)
+  - Full CRUD management of insurance providers
+  - Full CRUD management of insurance policies
+  - Purchase a policy on behalf of a customer during active chat
+  - View list of customers
+
+2.3 Admin
+  - All agent capabilities
+  - View admin dashboard with platform-wide statistics
+  - Manage all users (view, edit role, activate/deactivate, permanently delete)
+  - Delete users with full cascade (leads, conversations, purchases, payments)
+  - Create additional admin accounts
+  - Manage jobs (create, edit, open/close listings)
+  - Review job applications (download resumes, update status)
+
+
+3. FUNCTIONAL REQUIREMENTS
+--------------------------------------------------------------------------------
+
+3.1 Authentication & Authorization
+  ---------------------------------------------------------------
+  FR-1.1  User Registration
+          The system shall allow new users to register with name, email, 
+          phone, and password. Passwords must be hashed using bcrypt.
+  
+  FR-1.2  User Login
+          The system shall allow login using email, username, or phone 
+          combined with password. JWT tokens shall be issued with 24-hour 
+          expiry.
+  
+  FR-1.3  Admin Login
+          The system shall provide a separate admin login endpoint that 
+          supports both a hardcoded super admin account and database-stored 
+          admin accounts.
+  
+  FR-1.4  Google OAuth Login
+          The system shall allow login via Google OAuth using client ID and 
+          client secret.
+  
+  FR-1.5  Token Refresh
+          The system shall support access token refresh using refresh tokens.
+  
+  FR-1.6  Session Isolation
+          Authentication state must be stored in sessionStorage (not 
+          localStorage) to ensure each browser tab has independent login.
+  
+  FR-1.7  Auto Profile Refresh
+          On every page load, the system shall fetch the current user profile 
+          from /api/auth/me to ensure role changes take effect without 
+          re-login.
+  
+  FR-1.8  Password Reset
+          The system shall support forgot-password flow via OTP and password 
+          reset.
+
+3.2 User Profile
+  ---------------------------------------------------------------
+  FR-2.1  Profile Fields
+          The user profile shall include: name, email (read-only), username, 
+          phone, profile_pic, age, city, income, family_size.
+  
+  FR-2.2  Profile Picture Upload
+          Users shall be able to upload a profile picture from their local 
+          machine (JPEG/PNG/WebP, max 5MB). The system shall save the file 
+          to the uploads/ directory with a UUID filename.
+  
+  FR-2.3  Edit Profile
+          Users shall be able to edit their profile from a dedicated 
+          EditProfile page and from a modal within the Chat interface.
+
+3.3 Provider Management
+  ---------------------------------------------------------------
+  FR-3.1  Provider Model
+          Each provider shall have: id, name (unique), logo_url, description, 
+          website, contact_email, contact_phone, founded_year, provider_type, 
+          rating, is_active, created_at.
+  
+  FR-3.2  Provider CRUD
+          Admin and Agent roles shall have full CRUD access to providers via 
+          /api/admin/providers endpoints.
+  
+  FR-3.3  Provider Logo Upload
+          Provider logos shall be uploaded from local machine using the 
+          FileUpload component (JPEG/PNG/WebP, max 5MB).
+  
+  FR-3.4  Cascade Protection
+          A provider with linked policies shall not be deletable. The system 
+          shall return an error if deletion is attempted.
+  
+  FR-3.5  Provider Seeding
+          The seed script shall create 13 insurance providers: HDFC Life, 
+          ICICI Prudential, Tata AIA, Bajaj Allianz, LIC, SBI Life, Star 
+          Health, HDFC Ergo, New India Assurance, Max Bupa, ICICI Lombard, 
+          Kotak Mahindra, United India.
+  
+  FR-3.6  Provider Display
+          Provider name and logo shall be displayed alongside policies 
+          throughout the application (policy cards, comparison tables, 
+          checkout).
+
+3.4 Policy Management
+  ---------------------------------------------------------------
+  FR-4.1  Policy Types
+          The system shall support these insurance types: term, health, motor, 
+          travel, car, bike, home, pet, personal, child, retirement, pension, 
+          ulip, group-health, corporate, cancer, family-health, home-loan, 
+          taxi, commercial-vehicle.
+  
+  FR-4.2  Policy Model
+          Each policy shall be linked to a provider via provider_id (foreign 
+          key). Policy fields include: name, description, policy_type, 
+          premium, coverage_amount, tenure, age_min, age_max, rating, 
+          claim_settlement_ratio, features, terms, is_active.
+  
+  FR-4.3  Dynamic Policy Management
+          Policies shall not be hardcoded in seed data. All policies shall be 
+          created and managed dynamically via the admin/agent panel.
+  
+  FR-4.4  Policy CRUD (Admin/Agent)
+          Admin and Agent roles shall have full CRUD access to policies via 
+          /api/admin/policies. When creating/editing a policy, the provider 
+          shall be selectable from a dropdown of existing providers.
+  
+  FR-4.5  Public Policy Listing
+          The public API /api/policies shall return policies with provider 
+          name and logo. Filtering by type, provider_id, provider name, and 
+          coverage range shall be supported.
+  
+  FR-4.6  Policy API Response
+          The public policy API response shall use snake_case field names 
+          (policy_type, coverage_amount, claim_settlement_ratio) matching 
+          the backend model.
+
+3.5 AI Insurance Advisor Chatbot
+  ---------------------------------------------------------------
+  FR-5.1  LangChain Agent
+          The system shall provide a conversational AI insurance advisor 
+          powered by LangChain + OpenAI GPT-3.5-turbo.
+  
+  FR-5.2  AI Tools
+          The AI agent shall have access to: Policy Lookup Tool (database 
+          queries with provider join), Calculator Tool (premium estimation), 
+          Web Search Tool (live market data via Tavily API).
+  
+  FR-5.3  Singleton Agent Factory
+          The AI agent shall be instantiated via a get_ai_agent() factory 
+          function that creates a new InsuranceAgent instance on each call 
+          (no global state issues).
+  
+  FR-5.4  RAG Pipeline
+          The system shall include a RAG pipeline using OpenAI embeddings + 
+          PostgreSQL pgvector for policy document retrieval.
+  
+  FR-5.5  Error Handling
+          If the AI agent fails (e.g., missing API key), the chat system 
+          shall gracefully fall back to providing policy recommendations 
+          based on keyword matching.
+
+3.6 Customer Chat Interface
+  ---------------------------------------------------------------
+  FR-6.1  Chat UI
+          The Chat page shall display a sidebar with user info (profile pic, 
+          name, email, age, city, income, family_size) and an Edit Profile 
+          button. The main area shall show the conversation with the AI 
+          advisor.
+  
+  FR-6.2  Message Display
+          Customer messages shall appear on the right. AI/bot messages shall 
+          appear on the left. Agent messages shall appear on the left with 
+          an orange "Agent" label.
+  
+  FR-6.3  Suggested Questions
+          The chat shall display suggested questions that users can click 
+          to quickly start conversations.
+  
+  FR-6.4  Policy Recommendations in Chat
+          When the AI recommends a policy, it shall display a policy card 
+          within the chat showing provider, premium, coverage, claim ratio, 
+          and rating.
+  
+  FR-6.5  Real-time Agent Messages
+          The customer chat shall connect to /ws/customer/{user.id} 
+          WebSocket to receive agent messages in real-time without 
+          refreshing.
+  
+  FR-6.6  Load Existing Conversation
+          On mount, the chat shall load the most recent open conversation 
+          and its messages.
+
+3.7 Agent Chat Interface
+  ---------------------------------------------------------------
+  FR-7.1  Three-Tab Layout
+          The AgentChat page shall have three tabs: Pending (unassigned 
+          conversations), Active (agent's own conversations), History 
+          (closed conversations).
+  
+  FR-7.2  Real-time Notifications
+          Agents shall receive real-time WebSocket notifications via 
+          /ws/agent/{user.id} when a new customer message arrives. The 
+          Pending tab count shall update dynamically.
+  
+  FR-7.3  Accept Conversation
+          An agent shall be able to accept a pending conversation. Once 
+          accepted, the conversation moves to the agent's Active tab and 
+          is removed from other agents' Pending views.
+  
+  FR-7.4  Chat with Customer
+          Agents shall send and receive messages with customers in 
+          real-time through WebSocket.
+  
+  FR-7.5  Close Conversation
+          Agents shall be able to close a conversation. Closed 
+          conversations shall have status="closed" and remain in the 
+          database indefinitely (never deleted).
+  
+  FR-7.6  History Tab
+          The History tab shall display all closed conversations. Agents 
+          can browse past conversations with their message history.
+  
+  FR-7.7  Provider Quick-Create
+          Agents shall be able to create a new provider from within the 
+          AgentChat interface without navigating to the providers page.
+  
+  FR-7.8  Buy Policy for Customer
+          During an active chat, the agent shall be able to open a modal, 
+          select a policy from a dropdown, and purchase it on behalf of 
+          the customer. A mock payment record shall be created with 
+          status=completed.
+
+3.8 Agent Dashboard
+  ---------------------------------------------------------------
+  FR-8.1  Stats Overview
+          The Agent Dashboard shall show counts of pending conversations, 
+          active conversations, and closed conversations.
+  
+  FR-8.2  Recent Conversations
+          The dashboard shall list recent conversations with quick links 
+          to the AgentChat page.
+  
+  FR-8.3  Responsive Layout
+          The dashboard shall use pt-16 lg:pt-28 padding to prevent 
+          overlap with the navbar.
+
+3.9 Admin Dashboard
+  ---------------------------------------------------------------
+  FR-9.1  Stats Overview
+          The Admin Dashboard shall display total users, total policies, 
+          total providers, total purchases, and total leads.
+  
+  FR-9.2  Providers Table
+          The dashboard shall include a providers table with column 
+          headings: ID, Logo, Name, Type, Rating, Status, Actions.
+  
+  FR-9.3  Quick-Create Provider
+          Admins shall be able to quickly create a new provider from the 
+          dashboard using a modal with file upload for logo.
+  
+  FR-9.4  Role Access
+          The admin dashboard shall be accessible by both Admin and Agent 
+          roles. The backend dependency get_admin_or_agent shall allow 
+          both roles.
+
+3.10 Admin User Management
+  ---------------------------------------------------------------
+  FR-10.1 User List
+          The system shall display all users with role and active status.
+  
+  FR-10.2 Edit User
+          Admins shall edit user role and active status.
+  
+  FR-10.3 Delete User
+          Admins shall permanently delete users. Deletion shall cascade 
+          to all linked records: leads, conversations, messages, purchases, 
+          payments, and tasks.
+
+3.11 File Upload System
+  ---------------------------------------------------------------
+  FR-11.1 Upload Endpoint
+          POST /api/upload/image shall accept multipart form data with an 
+          image file. The file shall be saved to the uploads/ directory 
+          with a UUID-based filename preserving the original extension.
+  
+  FR-11.2 File Validation
+          Accepted formats: JPEG, PNG, WebP. Maximum file size: 5MB.
+  
+  FR-11.3 File Serving
+          Uploaded files shall be served via /uploads/{uuid}.{ext} using 
+          FastAPI StaticFiles.
+  
+  FR-11.4 Reusable FileUpload Component
+          A reusable FileUpload component shall provide: "Choose File" 
+          button, image preview, remove button, upload progress indicator, 
+          and callback returning the uploaded URL.
+  
+  FR-11.5 Integration Points
+          FileUpload shall replace all URL-based image inputs in: 
+          EditProfile.tsx, Chat.tsx edit modal, AdminProviders.tsx, 
+          AdminDashboard.tsx quick-create modal, AgentChat.tsx new 
+          provider modal.
+
+3.12 Real-time WebSocket System
+  ---------------------------------------------------------------
+  FR-12.1 ConnectionManager
+          A ConnectionManager class shall track agent and customer 
+          WebSocket connections separately.
+  
+  FR-12.2 Agent WebSocket
+          Endpoint: /ws/agent/{user_id}. Agents connect on AgentChat 
+          page mount. Connection uses dynamic window.location.hostname 
+          and stable dependency on user?.id to prevent reconnect loops.
+  
+  FR-12.3 Customer WebSocket
+          Endpoint: /ws/customer/{user_id}. Customers connect on Chat 
+          page mount for receiving agent messages.
+  
+  FR-12.4 Events
+          Broadcast events: new_pending (new customer message), 
+          conversation_accepted (agent takes conversation), 
+          new_message (new chat message).
+
+3.13 Navigation & UI
+  ---------------------------------------------------------------
+  FR-13.1 Responsive Navbar
+          The navbar shall have a ~30px top bar on lg+ screens. Total 
+          navbar height: ~110px on desktop.
+  
+  FR-13.2 Content Padding
+          All full-height pages shall use pt-16 lg:pt-28 to prevent 
+          content overlap with the navbar.
+  
+  FR-13.3 Agent Navbar Links
+          The navbar admin section shall show for both admin and agent 
+          roles. Agent Dashboard and Providers links shall appear for 
+          agents.
+  
+  FR-13.4 Page Routing
+          Routes: /chat (customer), /agent-chat (agent), /agent 
+          (dashboard), /admin (dashboard), /admin/users, /admin/policies, 
+          /admin/providers, /admin/jobs, /admin/applications.
+
+3.14 Career & Jobs
+  ---------------------------------------------------------------
+  FR-14.1 Job Listings
+          Public /api/jobs endpoint shall list active job openings.
+  
+  FR-14.2 Job Applications
+          Users shall apply for jobs with resume upload.
+  
+  FR-14.3 Admin Review
+          Admins shall review applications, download resumes, and update 
+          application status.
+
+3.15 Database Schema
+  ---------------------------------------------------------------
+  FR-15.1 Tables
+          The database shall have tables for: users, providers, policies, 
+          leads, purchases, payments, conversations, messages, jobs, 
+          job_applications, tasks.
+  
+  FR-15.2 Schema Sync
+          The /seed endpoint shall call Base.metadata.drop_all followed 
+          by Base.metadata.create_all to ensure schema matches models.
+  
+  FR-15.3 User Fields
+          The users table shall include columns: id, email, username, 
+          name, phone, profile_pic, hashed_password, role, is_active, 
+          age, city, income, family_size, created_at, updated_at.
+
+3.16 Seed Data
+  ---------------------------------------------------------------
+  FR-16.1 What Gets Seeded
+          The seed script shall create: 13 insurance providers, 5 users 
+          (1 admin, 1 agent, 3 customers), 3 sample leads.
+  
+  FR-16.2 What Does NOT Get Seeded
+          Policies shall NOT be seeded. They shall be created dynamically 
+          by admins/agents through the admin panel.
+
+
+4. NON-FUNCTIONAL REQUIREMENTS
+--------------------------------------------------------------------------------
+
+  NFR-1   Performance
+          The AI chatbot shall respond within 10 seconds under normal 
+          conditions. WebSocket messages shall be delivered in real-time 
+          (sub-second latency).
+
+  NFR-2   Security
+          All passwords shall be hashed with bcrypt. JWT tokens shall 
+          expire after 24 hours. CORS shall restrict origins to trusted 
+          domains. SQL injection shall be prevented via SQLAlchemy ORM. 
+          File uploads shall be validated for type and size.
+
+  NFR-3   Availability
+          The system shall run 24/7 with automatic recovery via Docker 
+          restart policies.
+
+  NFR-4   Browser Compatibility
+          The frontend shall support modern browsers: Chrome, Firefox, 
+          Edge, Safari (last 2 versions).
+
+  NFR-5   Error Handling
+          API errors shall return consistent JSON responses with 
+          appropriate HTTP status codes. The AI agent shall gracefully 
+          degrade when external API keys are missing.
+
+  NFR-6   Data Persistence
+          Chat conversations shall never be deleted from the database. 
+          Closing a conversation sets status="closed" but preserves all 
+          data indefinitely.
+
+  NFR-7   Session Management
+          Each browser tab shall maintain an independent session using 
+          sessionStorage. Closing the tab loses the session (user must 
+          re-login).
+
+
+5. API ENDPOINTS SUMMARY
+--------------------------------------------------------------------------------
+
+  Authentication:
+  POST   /api/auth/register
+  POST   /api/auth/login
+  POST   /api/auth/admin-login
+  POST   /api/auth/google
+  POST   /api/auth/refresh
+  GET    /api/auth/me
+  PUT    /api/auth/profile
+  POST   /api/auth/change-password
+  POST   /api/auth/forgot-password
+  POST   /api/auth/reset-password
+
+  Admin:
+  GET    /api/admin/dashboard
+  GET    /api/admin/users
+  PUT    /api/admin/users/{id}
+  DELETE /api/admin/users/{id}
+  GET    /api/admin/customers
+  GET    /api/admin/policies
+  POST   /api/admin/policies
+  PUT    /api/admin/policies/{id}
+  DELETE /api/admin/policies/{id}
+  POST   /api/admin/purchase-for-customer
+  GET    /api/admin/providers
+  POST   /api/admin/providers
+  PUT    /api/admin/providers/{id}
+  DELETE /api/admin/providers/{id}
+  GET    /api/admin/jobs
+  GET    /api/admin/job-applications
+  PUT    /api/admin/job-applications/{id}
+  POST   /api/admin/create-admin
+
+  Upload:
+  POST   /api/upload/image
+
+  Policies (Public):
+  GET    /api/policies
+  GET    /api/policies/{id}
+  POST   /api/policies/compare
+
+  Chat:
+  POST   /api/chat/message
+  GET    /api/chat/conversations
+  GET    /api/chat/conversations/{id}
+  POST   /api/chat/conversations/{id}/accept
+  POST   /api/chat/conversations/{id}/close
+
+  WebSocket:
+  ws://host:8000/ws/agent/{user_id}
+  ws://host:8000/ws/customer/{user_id}
+
+  Checkout:
+  POST   /api/checkout/create-order
+  POST   /api/checkout/verify
+
+  Jobs:
+  GET    /api/jobs
+  GET    /api/jobs/{id}
+  POST   /api/jobs/{id}/apply
+
+  Other:
+  GET    /health
+  POST   /seed
+  GET    /api/home
+  GET    /api/pages/{name}
+
+
+6. DEFAULT ACCOUNTS (SEED DATA)
+--------------------------------------------------------------------------------
+
+  Role      Email                     Password
+  -------   -----------------------   ---------
+  Admin     admin@policybazar.com     admin123
+  Agent     agent@policybazar.com     agent123
+  Customer  rahul@example.com         user123
+  Customer  priya@example.com         user123
+  Customer  amit@example.com          user123
+
+
+7. DEPENDENCIES & INTEGRATIONS
+--------------------------------------------------------------------------------
+
+  OpenAI API        - GPT-3.5-turbo for AI chatbot (optional)
+  Tavily API        - Live market search data (optional)
+  Razorpay          - Payment processing (test keys provided)
+  Google OAuth      - Social login (client ID/secret provided)
+  Twilio            - SMS notifications for password reset OTP
+  PostgreSQL        - Primary database with pgvector extension
+  Redis             - Cache and Celery message broker
+
+
+8. FUTURE ENHANCEMENTS (OUT OF SCOPE)
+--------------------------------------------------------------------------------
+
+  - Mobile application (iOS/Android)
+  - Multi-language support
+  - Policy renewal reminders via email/SMS
+  - Advanced analytics dashboard with charts
+  - Document upload for claims processing
+  - Integration with IRDAI for real-time policy validation
+  - Premium payment via UPI/net banking
+  - Policy cancellation and refund processing
+  - Customer rating and review system for providers
+  - AI-based claim fraud detection
+  - WhatsApp chatbot integration
+  - Voice-based interface for accessibility
+
+
+================================================================================
+  END OF FUNCTIONAL REQUIREMENTS DOCUMENT
+================================================================================
