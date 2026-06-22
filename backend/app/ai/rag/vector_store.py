@@ -8,15 +8,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
+_BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent  # backend/
+
 
 class VectorStore:
     def __init__(
         self,
-        persist_directory: str = "data/vector_store",
+        persist_directory: str | Path = "data/vector_store",
         dimension: int = 1536,
     ):
         self.dimension = dimension
-        self.persist_directory = Path(persist_directory)
+        self.persist_directory = _BASE_DIR / persist_directory
         self.persist_directory.mkdir(parents=True, exist_ok=True)
 
         self._documents: List[Dict[str, Any]] = []

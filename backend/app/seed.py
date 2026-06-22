@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime, timezone
 
 from app.database import async_session, engine, Base
@@ -6,6 +7,8 @@ from app.models.user import User, UserRole
 from app.models.lead import Lead, LeadStatus
 from app.models.policy import Policy, PolicyType
 from app.api.auth import pwd_context
+
+logger = logging.getLogger(__name__)
 
 
 PROVIDERS = [
@@ -79,6 +82,21 @@ async def seed_database():
                 session.add(lead)
 
         await session.commit()
+
+    await _seed_vector_store()
+
+
+async def _seed_vector_store():
+    from app.config import settings
+    if not settings.OPENAI_API_KEY:
+        logger.info("OPENAI_API_KEY not set, skipping RAG vector store ingestion")
+        return
+    from app.ai.rag.vector_store import VectorStore
+    from app.ai.rag.ingestion import run_ingestion
+    store = VectorStore()
+    store.clear()
+    count = await run_ingestion(store)
+    logger.info(f"Vector store seeded with {count} chunks")
 
 
 if __name__ == "__main__":

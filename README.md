@@ -13,7 +13,9 @@ An AI-powered insurance comparison and policy recommendation platform built with
 - [Seed Data](#seed-data)
 - [API Documentation](#api-documentation)
 - [AI Features](#ai-features)
+- [RAG Ingestion Pipeline](#rag-ingestion-pipeline)
 - [ML Model](#ml-model)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
 - [Security](#security)
@@ -186,9 +188,10 @@ policy-bazar/
 │   │   ├── ai/
 │   │   │   ├── agent.py                     # LangChain agent (singleton factory)
 │   │   │   ├── rag/                         # RAG pipeline
-│   │   │   │   ├── embeddings.py
-│   │   │   │   ├── vector_store.py
-│   │   │   │   └── retriever.py
+│   │   │   │   ├── embeddings.py            # OpenAI embedding wrapper
+│   │   │   │   ├── vector_store.py          # In-memory + numpy + file persistence
+│   │   │   │   ├── retriever.py             # Query → embed → search → format
+│   │   │   │   └── ingestion.py             # Load MD → chunk → embed → store
 │   │   │   ├── tools/                       # LangChain tools
 │   │   │   │   ├── web_search.py
 │   │   │   │   ├── calculator.py
@@ -267,7 +270,13 @@ policy-bazar/
 │   ├── nginx.conf                           # Production nginx
 │   ├── Dockerfile
 │   └── .env
+├── backend/data/
+│   ├── policy_documents/                    # Markdown knowledge base for RAG (8 files)
+│   └── vector_store/                        # Persisted embeddings (numpy + JSON)
 ├── uploads/                                 # Uploaded images
+├── .github/workflows/
+│   ├── ci.yml                               # Backend lint, frontend build, tests
+│   └── cd.yml                               # Docker build & push to GHCR
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
@@ -447,7 +456,73 @@ LangChain + OpenAI GPT-3.5-turbo conversational agent with tools:
 
 ### RAG Pipeline
 
-OpenAI embeddings + PostgreSQL pgvector for policy document retrieval.
+The RAG system uses a custom file-based vector store (not pgvector) built with numpy and OpenAI embeddings (`text-embedding-ada-002`, 1536 dimensions).
+
+**How it works:**
+
+1. **Knowledge Base** — 8 markdown files in `backend/data/policy_documents/` covering: term life, health, motor, travel, critical illness, ULIPs, general insurance guide, and claims FAQ
+2. **Chunking** — `RecursiveCharacterTextSplitter` splits documents into 500-char chunks with 100-char overlap
+3. **Embedding** — Each chunk is embedded using OpenAI `text-embedding-ada-002` via `embeddings.py`
+4. **Storage** — Embeddings stored as numpy array (`.npy`) and documents as JSON in `backend/data/vector_store/`
+5. **Retrieval** — User query is embedded, cosine similarity computed against all stored embeddings via `sklearn.metrics.pairwise.cosine_similarity`, top-k results returned
+
+**Data flow:**
+```
+Query → embed_text() → 1536-dim vector → cosine_similarity → top-k → format_for_context() → LLM
+```
+
+**Ingestion:** Run automatically with `POST /seed` (requires `OPENAI_API_KEY`). If key is not set, ingestion is skipped gracefully.
+
+### Intelligent Query Routing
+
+Before invoking tools, the agent classifies queries using keyword scoring + LLM fallback:
+
+| Route | Trigger Keywords | Action |
+|-------|-----------------|--------|
+| `rag` | "explain", "coverage", "term insurance" | Retrieve from vector store |
+| `policy_lookup` | "show policy", "find policy", "policies" | SQL query via PolicyLookupTool |
+| `calculation` | "calculate", "premium", "estimate" | PremiumCalculator math engine |
+| `web_search` | "latest", "market", "top plan" | Tavily API search |
+| `general` | Default / no match | Pure LLM response |
+
+## RAG Ingestion Pipeline
+
+The vector store is populated with insurance domain knowledge during the seed process.
+
+### Prerequisites
+
+Set `OPENAI_API_KEY` in `backend/.env` to enable embedding generation.
+
+### Running Ingestion
+
+```bash
+# Ingestion runs automatically as part of seed
+curl -X POST http://localhost:8000/seed
+```
+
+Or run standalone:
+```bash
+cd backend
+python -c "
+import asyncio
+from app.ai.rag.vector_store import VectorStore
+from app.ai.rag.ingestion import run_ingestion
+asyncio.run(run_ingestion(VectorStore()))
+"
+```
+
+### Adding New Documents
+
+Add markdown files to `backend/data/policy_documents/` and re-run seed. The ingestion pipeline:
+1. Detects new files automatically
+2. Chunks them with 500-char window and 100-char overlap
+3. Generates embeddings via OpenAI
+4. Appends to existing vector store
+5. Persists embeddings to disk (numpy `.npy` + JSON)
+
+### Document Format
+
+Write plain markdown with headings and bullet points. The chunker preserves semantic boundaries using natural separators (`\n\n`, `\n`, `.`, ` `). Each chunk's metadata includes the source document index for traceability.
 
 ## ML Model
 
@@ -458,6 +533,38 @@ Predicts best policy fit using customer age, income, coverage amount, risk toler
 ### Lead Scoring
 
 Ensemble scoring (0-100) based on engagement, budget match, coverage fit, intent signals, and recency.
+
+## CI/CD Pipeline
+
+The project uses **GitHub Actions** for continuous integration and delivery.
+
+### CI (`ci.yml`)
+Triggered on push/PR to `main` and `develop` branches:
+
+| Job | What it does |
+|-----|-------------|
+| `backend-lint` | Ruff linter + mypy type check |
+| `frontend-lint` | TypeScript check + Vite production build |
+| `backend-test` | Runs pytest against a temporary PostgreSQL container |
+| `deploy-check` | Gate check that all prior jobs passed on main |
+
+### CD (`cd.yml`)
+Triggered on push to `main` or version tags (`v*`):
+
+1. Logs in to **GitHub Container Registry** (ghcr.io)
+2. Builds & pushes **backend** Docker image with tags: `main`, `semver`, short SHA
+3. Builds & pushes **frontend** Docker image with same tagging strategy
+
+### Local Docker Build
+
+```bash
+docker compose build
+docker compose up -d
+# Seed the database
+curl -X POST http://localhost:8000/seed
+```
+
+The backend container mounts `./backend/data:/app/data` so the vector store persists across restarts.
 
 ## Environment Variables
 
