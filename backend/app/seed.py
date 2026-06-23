@@ -81,6 +81,37 @@ async def seed_database():
                 )
                 session.add(lead)
 
+        POLICIES = [
+            {"name": "HDFC Life Click 2 Protect", "provider_name": "HDFC Life", "policy_type": PolicyType.TERM, "premium": 12500, "coverage": 10000000, "csr": 98.5, "desc": "Comprehensive term insurance plan with life cover and critical illness option"},
+            {"name": "LIC Jeevan Anand", "provider_name": "LIC", "policy_type": PolicyType.TERM, "premium": 9800, "coverage": 5000000, "csr": 97.8, "desc": "Traditional term plan with maturity benefit and life coverage"},
+            {"name": "ICICI Pru iProtect Smart", "provider_name": "ICICI Prudential", "policy_type": PolicyType.TERM, "premium": 11000, "coverage": 7500000, "csr": 96.2, "desc": "Flexible term insurance with return of premium option"},
+            {"name": "Star Health Comprehensive", "provider_name": "Star Health", "policy_type": PolicyType.HEALTH, "premium": 15000, "coverage": 500000, "csr": 94.5, "desc": "Individual health insurance with cashless hospitalization"},
+            {"name": "Max Bupa Health Companion", "provider_name": "Max Bupa", "policy_type": PolicyType.HEALTH, "premium": 18000, "coverage": 1000000, "csr": 93.1, "desc": "Family floater health insurance with wellness benefits"},
+            {"name": "HDFC Ergo Health Suraksha", "provider_name": "HDFC Ergo", "policy_type": PolicyType.HEALTH, "premium": 13500, "coverage": 750000, "csr": 95.0, "desc": "Affordable health plan with day-care procedure coverage"},
+            {"name": "ICICI Lombard Motor Insurance", "provider_name": "ICICI Lombard", "policy_type": PolicyType.MOTOR, "premium": 8500, "coverage": 500000, "csr": 92.3, "desc": "Comprehensive motor insurance with zero depreciation add-on"},
+            {"name": "Bajaj Allianz Car Insurance", "provider_name": "Bajaj Allianz", "policy_type": PolicyType.MOTOR, "premium": 7200, "coverage": 400000, "csr": 93.8, "desc": "Private car insurance with roadside assistance and NCB protection"},
+            {"name": "New India Motor Policy", "provider_name": "New India Assurance", "policy_type": PolicyType.MOTOR, "premium": 6500, "coverage": 350000, "csr": 91.0, "desc": "Two-wheeler and car insurance with third-party liability"},
+            {"name": "Tata AIA Fortune Pro", "provider_name": "Tata AIA", "policy_type": PolicyType.ULIP, "premium": 50000, "coverage": 10000000, "csr": 94.0, "desc": "Unit-linked investment plan with life cover and market returns"},
+            {"name": "Kotak Mahindra Classic", "provider_name": "Kotak Mahindra", "policy_type": PolicyType.INVESTMENT, "premium": 25000, "coverage": 5000000, "csr": 95.2, "desc": "Investment-oriented policy with guaranteed returns"},
+            {"name": "SBI Life Smart Shield", "provider_name": "SBI Life", "policy_type": PolicyType.TERM, "premium": 10500, "coverage": 6000000, "csr": 97.0, "desc": "Affordable term plan with accidental death benefit"},
+        ]
+
+        for pd in POLICIES:
+            provider = created_providers.get(pd["provider_name"])
+            if provider:
+                policy = Policy(
+                    name=pd["name"],
+                    provider_id=provider.id,
+                    policy_type=pd["policy_type"],
+                    premium=pd["premium"],
+                    coverage_amount=pd["coverage"],
+                    claim_settlement_ratio=pd["csr"],
+                    description=pd["desc"],
+                    features=[{"name": "Life Cover"}, {"name": "Maturity Benefit"}],
+                    addons={"critical_illness": True, "accidental_death": True},
+                )
+                session.add(policy)
+
         await session.commit()
 
     await _seed_vector_store()
@@ -91,12 +122,15 @@ async def _seed_vector_store():
     if not settings.OPENAI_API_KEY:
         logger.info("OPENAI_API_KEY not set, skipping RAG vector store ingestion")
         return
-    from app.ai.rag.vector_store import VectorStore
-    from app.ai.rag.ingestion import run_ingestion
-    store = VectorStore()
-    store.clear()
-    count = await run_ingestion(store)
-    logger.info(f"Vector store seeded with {count} chunks")
+    try:
+        from app.ai.rag.vector_store import VectorStore
+        from app.ai.rag.ingestion import run_ingestion
+        store = VectorStore()
+        store.clear()
+        count = await run_ingestion(store)
+        logger.info(f"Vector store seeded with {count} chunks")
+    except Exception as e:
+        logger.warning(f"Vector store seeding skipped: {e}")
 
 
 if __name__ == "__main__":

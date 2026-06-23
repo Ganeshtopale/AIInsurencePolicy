@@ -227,10 +227,45 @@ class InsuranceAgent:
             return response.content
         except Exception as e:
             logger.error(f"LLM call failed: {e}")
+
+        if context:
             return (
-                "I'm sorry, I encountered an error processing your request. "
-                "Please try again or contact support."
+                f"Here's what I found regarding your question:\n\n{context}\n\n"
+                f"(I'm currently operating in offline mode — "
+                f"please consult a human agent for personalized advice.)"
             )
+
+        try:
+            type_match = re.search(
+                r"(term|health|motor|investment|travel)", user_message.lower()
+            )
+            if type_match:
+                policies = await self.policy_lookup.lookup_by_type(type_match.group(1))
+            else:
+                policies = await self.policy_lookup.search_policies(query=user_message)
+
+            if policies:
+                parts = ["Here are relevant policies from our database:"]
+                for p in policies[:5]:
+                    parts.append(
+                        f"- **{p['policy_name']}** by {p['provider']}\n"
+                        f"  Type: {p['type']} | Premium: Rs {p['premium']:,.2f}/yr\n"
+                        f"  Coverage: Rs {p['coverage_amount']:,.2f}\n"
+                        f"  Claim Ratio: {p['claim_settlement_ratio'] or 'N/A'}%"
+                    )
+                parts.append(
+                    "(I'm currently in offline mode — "
+                    "a human agent can provide more tailored advice.)"
+                )
+                return "\n\n".join(parts)
+        except Exception:
+            pass
+
+        return (
+            "I received your message. I'm currently operating in limited mode "
+            "and cannot generate AI-powered responses right now. "
+            "A human agent will review our conversation and get back to you."
+        )
 
     async def _extract_premium_params(self, query: str) -> Optional[Dict[str, Any]]:
         prompt = (
@@ -253,8 +288,43 @@ class InsuranceAgent:
             params["tenure_years"] = int(params.get("tenure_years", 20))
             return params
         except Exception as e:
-            logger.warning(f"Could not extract premium params: {e}")
-            return None
+            logger.warning(f"LLM premium param extraction failed: {e}")
+
+        logger.info("Falling back to regex-based premium param extraction")
+        q = query.lower()
+        params: Dict[str, Any] = {}
+        age_match = re.search(r"(\d+)\s*(?:years?\s*)?(?:old|age)", q)
+        if age_match:
+            params["age"] = int(age_match.group(1))
+        cov_match = re.search(r"(\d+)\s*(lakh|crore|k|million|rupees?)", q)
+        if cov_match:
+            val = float(cov_match.group(1))
+            unit = cov_match.group(2)
+            if "crore" in unit:
+                val *= 10000000
+            elif "lakh" in unit:
+                val *= 100000
+            elif "million" in unit:
+                val *= 1000000
+            elif "k" in unit:
+                val *= 1000
+            params["coverage_amount"] = val
+        tenure_match = re.search(r"(\d+)\s*(?:years?|yr)\s*(?:tenure|term)", q)
+        if tenure_match:
+            params["tenure_years"] = int(tenure_match.group(1))
+        health_map = {"excellent": "excellent", "good": "good", "standard": "standard", "below": "below_average", "poor": "below_average"}
+        for keyword, rating in health_map.items():
+            if keyword in q:
+                params["health_rating"] = rating
+                break
+        if "smoker" in q or "smoking" in q:
+            params["smoker"] = True
+        if params:
+            params.setdefault("age", 30)
+            params.setdefault("coverage_amount", 1000000)
+            params.setdefault("tenure_years", 20)
+            return params
+        return None
 
     async def _extract_requirements_async(self, message: str):
         known_fields = {

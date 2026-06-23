@@ -46,7 +46,12 @@ async def run_ingestion(vector_store: VectorStore) -> int:
     if not all_chunks:
         return 0
 
-    embeddings = await embed_texts(all_chunks)
+    try:
+        embeddings = await embed_texts(all_chunks)
+    except Exception as e:
+        logger.error(f"Embedding generation failed (check API key/quota): {e}")
+        return 0
+
     vector_store.add_documents(
         texts=all_chunks,
         embeddings=embeddings,

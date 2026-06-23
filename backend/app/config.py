@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
 
-    OPENAI_API_KEY: str = ""
+    OPENAI_API_KEY: str = "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"
     TAVILY_API_KEY: str = ""
 
     CLERK_PUBLISHABLE_KEY: str = "pk_test_YWRlcXVhdGUtZ2FubmV0LTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
