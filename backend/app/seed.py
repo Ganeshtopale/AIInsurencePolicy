@@ -28,7 +28,7 @@ PROVIDERS = [
 ]
 
 USERS = [
-    {"name": "Admin User", "email": "admin@policybazar.com", "password": "admin123", "role": UserRole.ADMIN},
+    {"name": "Admin User", "email": "admin@policybazar.com", "password": "admin123", "role": UserRole.ADMIN, "username": "admin"},
     {"name": "Agent Sharma", "email": "agent@policybazar.com", "password": "agent123", "role": UserRole.AGENT},
     {"name": "Rahul Kumar", "email": "rahul@example.com", "password": "user123", "role": UserRole.CUSTOMER},
     {"name": "Priya Singh", "email": "priya@example.com", "password": "user123", "role": UserRole.CUSTOMER},
@@ -64,6 +64,7 @@ async def seed_database():
                 email=u["email"],
                 hashed_password=pwd_context.hash(u["password"]),
                 role=u["role"],
+                username=u.get("username"),
             )
             session.add(user)
             await session.flush()
@@ -107,7 +108,7 @@ async def seed_database():
                     coverage_amount=pd["coverage"],
                     claim_settlement_ratio=pd["csr"],
                     description=pd["desc"],
-                    features=[{"name": "Life Cover"}, {"name": "Maturity Benefit"}],
+                    features=["Life Cover", "Maturity Benefit"],
                     addons={"critical_illness": True, "accidental_death": True},
                 )
                 session.add(policy)

@@ -229,6 +229,9 @@ async def admin_login(credentials: UserLogin, db: AsyncSession = Depends(get_db)
 
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
+    if not user:
+        result = await db.execute(select(User).where(User.email == username))
+        user = result.scalar_one_or_none()
     if not user or not pwd_context.verify(password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid admin credentials")
 

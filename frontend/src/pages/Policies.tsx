@@ -98,7 +98,7 @@ function mapApiPolicy(p: any): Policy {
     claimRatio: p.claim_settlement_ratio ? `${p.claim_settlement_ratio}%` : '—',
     rating: p.rating || 0,
     reviews: 0,
-    features: p.features || [],
+    features: (p.features || []).map((f: any) => typeof f === 'string' ? f : f.name || f.title || JSON.stringify(f)),
     benefits: p.benefits || [],
     eligibility: 'All ages',
     maxAge: 0,

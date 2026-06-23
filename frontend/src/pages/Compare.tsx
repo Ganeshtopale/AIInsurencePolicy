@@ -66,10 +66,10 @@ function mapApiPolicy(p: any): Policy {
     coverage: p.coverage_amount ? `₹${(p.coverage_amount / 100000).toFixed(p.coverage_amount >= 10000000 ? 0 : 1)}${p.coverage_amount >= 10000000 ? 'Cr' : 'L'}` : '—',
     claimRatio: p.claim_settlement_ratio ? `${p.claim_settlement_ratio}%` : '—',
     waitingPeriod: p.waiting_period ? `${p.waiting_period} days` : 'None',
-    addons: (p.features || []).slice(0, 3),
+    addons: (p.features || []).slice(0, 3).map((f: any) => typeof f === 'string' ? f : f.name || f.title || JSON.stringify(f)),
     rating: p.rating || 0,
     reviews: 0,
-    features: p.features || [],
+    features: (p.features || []).map((f: any) => typeof f === 'string' ? f : f.name || f.title || JSON.stringify(f)),
     bestFor: 'Popular',
   };
 }
