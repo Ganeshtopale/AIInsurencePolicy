@@ -89,7 +89,7 @@ services:
       AWS_BUCKET_NAME: property-platform-media
       AWS_REGION: ap-south-1
       PLATFORM_COMMISSION_PERCENT: 10.0
-      ADMIN_EMAIL: admin@orento.com
+      ADMIN_EMAIL: admin@insurancebazaar.app
       ADMIN_PASSWORD: "Welcome@2026"
       ADMIN_MOBILE: 8669065575
       ENVIRONMENT: development
@@ -140,7 +140,7 @@ services:
       AWS_BUCKET_NAME: property-platform-media
       AWS_REGION: ap-south-1
       PLATFORM_COMMISSION_PERCENT: 10.0
-      ADMIN_EMAIL: admin@orento.com
+      ADMIN_EMAIL: admin@insurancebazaar.app
       ADMIN_PASSWORD: "Welcome@2026"
       ADMIN_MOBILE: 8669065575
       ENVIRONMENT: development

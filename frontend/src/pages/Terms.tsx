@@ -4,11 +4,11 @@ export default function Terms() {
   const sections = [
     {
       title: 'Acceptance of Terms',
-      content: 'By accessing or using the PolicyBazar AI website and services, you agree to be bound by these Terms of Use. If you do not agree with any part of these terms, you may not use our services.',
+      content: 'By accessing or using the Insurance Bazaar website and services, you agree to be bound by these Terms of Use. If you do not agree with any part of these terms, you may not use our services.',
     },
     {
       title: 'Description of Services',
-      content: 'PolicyBazar AI provides an online platform that allows users to compare insurance policies from multiple insurers, obtain quotes, purchase policies, file claims, and access insurance-related information and tools.',
+      content: 'Insurance Bazaar provides an online platform that allows users to compare insurance policies from multiple insurers, obtain quotes, purchase policies, file claims, and access insurance-related information and tools.',
     },
     {
       title: 'User Responsibilities',
@@ -20,7 +20,7 @@ export default function Terms() {
     },
     {
       title: 'Limitation of Liability',
-      content: 'PolicyBazar AI acts as an insurance broker and is not an insurance company. We strive to provide accurate information but do not guarantee the accuracy, completeness, or timeliness of the information displayed on our platform.',
+      content: 'Insurance Bazaar acts as an insurance broker and is not an insurance company. We strive to provide accurate information but do not guarantee the accuracy, completeness, or timeliness of the information displayed on our platform.',
     },
     {
       title: 'Termination',

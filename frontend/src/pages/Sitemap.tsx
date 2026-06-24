@@ -52,7 +52,7 @@ export default function Sitemap() {
       <div className="mx-auto max-w-5xl px-4 py-16">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold text-gray-900">Sitemap</h1>
-          <p className="text-lg text-gray-600">Complete list of all pages on PolicyBazar AI.</p>
+          <p className="text-lg text-gray-600">Complete list of all pages on Insurance Bazaar.</p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

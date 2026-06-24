@@ -13,7 +13,7 @@ export default function About() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 pt-24">
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-16 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">About PolicyBazar AI</h1>
+          <h1 className="mb-4 text-4xl font-bold text-gray-900">About Insurance Bazaar</h1>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
             India's most trusted AI-powered insurance marketplace. We help you compare, choose, and buy
             the best insurance policies tailored to your needs.
@@ -36,7 +36,7 @@ export default function About() {
           <div>
             <h2 className="mb-4 text-2xl font-bold text-gray-900">Our Mission</h2>
             <p className="mb-4 text-gray-600">
-              At PolicyBazar AI, we leverage cutting-edge artificial intelligence to simplify insurance
+              At Insurance Bazaar, we leverage cutting-edge artificial intelligence to simplify insurance
               for every Indian. Our mission is to make insurance transparent, affordable, and accessible
               to all.
             </p>

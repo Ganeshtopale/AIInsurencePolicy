@@ -1,6 +1,6 @@
 ================================================================================
   FUNCTIONAL REQUIREMENTS DOCUMENT (FRD)
-  Project: PolicyBazar - AI Insurance Marketplace
+  Project: Insurance Bazaar - AI Insurance Marketplace
   Version: 1.0
   Date: June 2026
 ================================================================================
@@ -8,7 +8,7 @@
 1. EXECUTIVE SUMMARY
 --------------------------------------------------------------------------------
 
-PolicyBazar is an AI-powered insurance comparison and policy recommendation 
+Insurance Bazaar is an AI-powered insurance comparison and policy recommendation 
 platform that connects customers with insurance policies through an intelligent 
 chatbot, real-time market comparison, dynamic provider/policy management, and a 
 seamless purchase flow. The platform supports three user roles: Customer, Agent, 
@@ -532,12 +532,12 @@ policies.
 6. DEFAULT ACCOUNTS (SEED DATA)
 --------------------------------------------------------------------------------
 
-  Role      Email                     Password
-  -------   -----------------------   ---------
-  Admin     admin@policybazar.com     admin123
-  Agent     agent@policybazar.com     agent123
-  Customer  rahul@example.com         user123
-  Customer  priya@example.com         user123
+  Role      Email                         Password
+  -------   ----------------------------   ---------
+  Admin     admin@insurancebazaar.app     admin123
+  Agent     agent@insurancebazaar.app     agent123
+  Customer  rahul@example.com             user123
+  Customer  priya@example.com             user123
   Customer  amit@example.com          user123
 
 

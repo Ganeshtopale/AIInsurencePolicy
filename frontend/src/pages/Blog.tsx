@@ -5,7 +5,7 @@ export default function Blog() {
     {
       title: 'How AI is Transforming Insurance in India',
       excerpt: 'Discover how artificial intelligence is making insurance more accessible, affordable, and transparent for millions of Indians.',
-      author: 'PolicyBazar Team',
+      author: 'Insurance Bazaar',
       date: '15 Mar 2026',
       category: 'AI & Insurance',
     },
@@ -33,7 +33,7 @@ export default function Blog() {
     {
       title: 'Tax Benefits Under Section 80C and 80D',
       excerpt: 'Understand how insurance premiums can help you save tax under various sections of the Income Tax Act.',
-      author: 'PolicyBazar Team',
+      author: 'Insurance Bazaar',
       date: '20 Feb 2026',
       category: 'Tax Saving',
     },

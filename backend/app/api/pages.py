@@ -4,7 +4,7 @@ router = APIRouter(prefix="/api/pages", tags=["Pages"])
 
 PAGE_CONTENT = {
     "about": {
-        "title": "About PolicyBazar AI",
+        "title": "About Insurance Bazaar",
         "subtitle": "India's most trusted AI-powered insurance marketplace.",
         "stats": [
             {"label": "Happy Customers", "value": "10M+"},
@@ -16,7 +16,7 @@ PAGE_CONTENT = {
     "contact": {
         "title": "Contact Us",
         "subtitle": "Have a question or need help? We're here for you 24/7.",
-        "email": "support@policybazar.ai",
+        "email": "support@insurancebazaar.app",
         "phone": "1800-208-8787",
         "claim_phone": "1800-258-5881",
         "address": "AI Insurance Bazaar Pvt. Ltd., Mumbai, Maharashtra, India",
@@ -40,7 +40,7 @@ PAGE_CONTENT = {
         "subtitle": "We are committed to resolving your concerns promptly and fairly.",
         "officer_name": "Mr. Rajesh Kumar",
         "officer_role": "Chief Grievance Officer",
-        "officer_email": "grievance@policybazar.ai",
+        "officer_email": "grievance@insurancebazaar.app",
     },
     "claims": {
         "title": "Claims Procedure",

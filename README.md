@@ -1,4 +1,4 @@
-# PolicyBazar — AI Insurance Marketplace
+# Insurance Bazaar — AI Insurance Marketplace
 
 An AI-powered insurance comparison and policy recommendation platform built with React, FastAPI, PostgreSQL, LangChain, and real-time WebSocket chat.
 
@@ -17,12 +17,12 @@ An AI-powered insurance comparison and policy recommendation platform built with
 - [ML Model](#ml-model)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Environment Variables](#environment-variables)
+- [Cyber Security](#cyber-security)
 - [Deployment](#deployment)
-- [Security](#security)
 
 ## Overview
 
-PolicyBazar connects customers with insurance policies through an AI-powered chatbot, real-time market comparison, and a seamless purchase flow. Agents manage leads via real-time WebSocket notifications, manage providers/policies through admin CRUD, and purchase policies on behalf of customers.
+Insurance Bazaar connects customers with insurance policies through an AI-powered chatbot, real-time market comparison, and a seamless purchase flow. Agents manage leads via real-time WebSocket notifications, manage providers/policies through admin CRUD, and purchase policies on behalf of customers.
 
 **For customers:** Compare policies, chat with an AI advisor, estimate premiums, complete purchases, and get real-time agent assistance.
 
@@ -123,46 +123,48 @@ PolicyBazar connects customers with insurance policies through an AI-powered cha
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Frontend (React + Vite)                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────────────┐  │
-│  │   Pages   │  │Components│  │   Store   │  │   Services (API)   │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────────────┘  │
-└──────────────────────────────────┬──────────────────────────────────┘
-                                   │ HTTP (proxied via Vite) + WebSocket
-┌──────────────────────────────────┴──────────────────────────────────┐
-│                     Backend (FastAPI + Python 3.12)                   │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────────────┐  │
-│  │API Routes│  │ Services  │  │  Models   │  │   AI / ML Layer    │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────────────┘  │
-│                                                                     │
-│  ┌───────────────┐  ┌──────────────────┐  ┌────────────────────┐  │
-│  │ WebSocket Mgr  │  │  ConnectionPool  │  │  Background Tasks  │  │
-│  └───────────────┘  └──────────────────┘  └────────────────────┘  │
-└──────────────────────────────────┬──────────────────────────────────┘
-                                   │
-      ┌──────────────────────────────┼──────────────────────────────┐
-      │              │                              │              │
-┌───────┐  ┌───────────┐  ┌─────────────────┐  ┌───────────┐  ┌───────┐
-│PostgreSQL│ │  Redis    │  │  OpenAI / Tavily │  │   Files   │  │Razorpay│
-│+pgvector │ │(Cache+Q)  │  │  (External API)  │  │ (Uploads) │  │(Pay)   │
-└─────────┘  └───────────┘  └─────────────────┘  └───────────┘  └───────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          Frontend (React + Vite)                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────────────────┐  │
+│  │   Pages   │  │Components│  │   Store   │  │   Services (Axios API)  │  │
+│  └──────────┘  └──────────┘  └──────────┘  └────────────────────────┘  │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │ HTTP/1.1 (proxied via Vite) + WebSocket
+┌───────────────────────────────────┴─────────────────────────────────────┐
+│                       Backend (FastAPI + Python 3.12)                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────────────────┐  │
+│  │API Routes│  │ Services  │  │  Models   │  │   AI / ML Layer        │  │
+│  │ (13 rtrs)│  │(auth,pay) │  │(SQLAlchm) │  │ (Agent,RAG,Tools,ML)  │  │
+│  └──────────┘  └──────────┘  └──────────┘  └────────────────────────┘  │
+│                                                                         │
+│  ┌───────────────┐  ┌──────────────────┐  ┌────────────────────────┐  │
+│  │ WebSocket Mgr  │  │  ConnectionPool  │  │  Celery Background     │  │
+│  │ (agent/cust)   │  │  (asyncpg)       │  │  Tasks (renewal, etc)  │  │
+│  └───────────────┘  └──────────────────┘  └────────────────────────┘  │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │
+       ┌─────────────────────────────┼─────────────────────────────┐
+       │              │                              │             │
+┌──────────┐  ┌───────────┐  ┌─────────────────┐  ┌──────────┐  ┌────────┐
+│PostgreSQL │  │  Redis    │  │  OpenAI/Tavily   │  │   Files   │  │Razorpay│
+│ +pgvector │  │(Cache+Q)  │  │  (External APIs) │  │ (Uploads) │  │(Pay)   │
+└──────────┘  └───────────┘  └─────────────────┘  └──────────┘  └────────┘
 ```
 
 ## Project Structure
 
 ```
-policy-bazar/
+insurance-bazaar/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                          # FastAPI entry point (WebSocket + HTTP)
 │   │   ├── config.py                        # Pydantic settings
 │   │   ├── database.py                      # SQLAlchemy async engine
-│   │   ├── seed.py                          # Database seeder (providers, users, leads)
+│   │   ├── seed.py                          # Database seeder
 │   │   ├── ws_manager.py                    # WebSocket ConnectionManager
 │   │   ├── models/
-│   │   │   ├── user.py                      # User (with age, city, income, family_size)
-│   │   │   ├── policy.py                    # Insurance policies (linked to providers)
+│   │   │   ├── user.py                      # User model
+│   │   │   ├── policy.py                    # Insurance policies
 │   │   │   ├── provider.py                  # Insurance providers
 │   │   │   ├── lead.py                      # Lead tracking
 │   │   │   ├── purchase.py                  # Policy purchases
@@ -172,34 +174,37 @@ policy-bazar/
 │   │   │   └── task.py                      # Background tasks
 │   │   ├── api/
 │   │   │   ├── __init__.py                  # Router aggregator
-│   │   │   ├── auth.py                      # Register, login, profile (extended fields)
-│   │   │   ├── admin.py                     # Dashboard, users, policies (with provider_id), jobs, customers
-│   │   │   ├── admin_providers.py           # Provider CRUD (admin + agent)
-│   │   │   ├── chat.py                      # AI chatbot + conversation management
-│   │   │   ├── policies.py                  # Public policy listing (with provider info)
+│   │   │   ├── auth.py                      # Register, login, profile
+│   │   │   ├── admin.py                     # Dashboard, users, policies, jobs
+│   │   │   ├── admin_providers.py           # Provider CRUD
+│   │   │   ├── chat.py                      # AI chatbot + conversation mgmt
+│   │   │   ├── policies.py                  # Public policy listing
 │   │   │   ├── leads.py                     # Lead management
 │   │   │   ├── compare.py                   # Quote comparison
 │   │   │   ├── checkout.py                  # Payments
 │   │   │   ├── jobs.py                      # Public jobs + apply
-│   │   │   ├── upload.py                    # File upload endpoint
+│   │   │   ├── upload.py                    # File upload
 │   │   │   ├── pages.py                     # Static page content
 │   │   │   ├── home.py                      # Homepage data
 │   │   │   └── user_profile.py              # Profile & purchases
 │   │   ├── ai/
-│   │   │   ├── agent.py                     # LangChain agent (singleton factory)
-│   │   │   ├── rag/                         # RAG pipeline
+│   │   │   ├── agent.py                     # LangChain agent (singleton)
+│   │   │   ├── rag/
 │   │   │   │   ├── embeddings.py            # OpenAI embedding wrapper
-│   │   │   │   ├── vector_store.py          # In-memory + numpy + file persistence
-│   │   │   │   ├── retriever.py             # Query → embed → search → format
-│   │   │   │   └── ingestion.py             # Load MD → chunk → embed → store
-│   │   │   ├── tools/                       # LangChain tools
-│   │   │   │   ├── web_search.py
-│   │   │   │   ├── calculator.py
-│   │   │   │   └── policy_lookup.py
-│   │   │   └── prompts/                     # LLM prompts
+│   │   │   │   ├── vector_store.py          # File-based vector store
+│   │   │   │   ├── retriever.py             # Query → embed → search
+│   │   │   │   └── ingestion.py             # MD → chunk → embed → store
+│   │   │   ├── tools/
+│   │   │   │   ├── web_search.py            # Tavily search
+│   │   │   │   ├── calculator.py            # Premium calculator
+│   │   │   │   └── policy_lookup.py         # DB policy search
+│   │   │   └── prompts/
+│   │   │       ├── chat.py                  # System prompt
+│   │   │       ├── summary.py               # Conversation summary prompt
+│   │   │       └── lead_scoring.py          # Lead scoring prompt
 │   │   ├── ml/
-│   │   │   ├── inference.py
-│   │   │   └── training/
+│   │   │   ├── inference.py                 # Model inference
+│   │   │   └── training/                    # Training scripts
 │   │   ├── workflows/                       # Celery tasks
 │   │   │   ├── renewal.py
 │   │   │   ├── payment.py
@@ -218,68 +223,39 @@ policy-bazar/
 │   │   ├── main.tsx
 │   │   ├── App.tsx                          # Routes (30+ pages)
 │   │   ├── pages/
-│   │   │   ├── Home.tsx                     # Landing page
-│   │   │   ├── Chat.tsx                     # AI advisor + real-time agent chat
-│   │   │   ├── AgentChat.tsx                # Agent conversation hub (Pending/Active/History)
-│   │   │   ├── Compare.tsx                  # Policy comparison
-│   │   │   ├── Checkout.tsx                 # Checkout flow
-│   │   │   ├── Policies.tsx                 # Policy listing
-│   │   │   ├── Login.tsx                    # Login / Register / Admin Login
-│   │   │   ├── Dashboard.tsx               # Customer dashboard
-│   │   │   ├── ProfilePage.tsx
-│   │   │   ├── EditProfile.tsx              # Profile edit (pic, age, city, income, family)
-│   │   │   ├── ChangePassword.tsx
-│   │   │   ├── PurchaseHistory.tsx
-│   │   │   ├── ForgotPassword.tsx
-│   │   │   ├── AdminDashboard.tsx           # Admin overview + providers table
-│   │   │   ├── AdminUsers.tsx               # User management (with delete)
-│   │   │   ├── AdminPolicies.tsx            # Policy CRUD (linked to providers)
-│   │   │   ├── AdminProviders.tsx           # Provider CRUD
-│   │   │   ├── AdminJobs.tsx                # Job postings CRUD
-│   │   │   ├── AdminJobApplications.tsx     # Application review
-│   │   │   ├── AgentDashboard.tsx           # Agent stats dashboard
-│   │   │   ├── Careers.tsx                  # Dynamic job listing + apply
-│   │   │   ├── About.tsx
-│   │   │   ├── Blog.tsx
-│   │   │   ├── Partner.tsx
-│   │   │   ├── Press.tsx
-│   │   │   ├── Sitemap.tsx
-│   │   │   ├── Contact.tsx
-│   │   │   ├── Grievance.tsx
-│   │   │   ├── Claims.tsx
-│   │   │   ├── FAQ.tsx
-│   │   │   ├── Privacy.tsx
-│   │   │   └── Terms.tsx
+│   │   │   ├── Home.tsx, Chat.tsx, Policies.tsx, Compare.tsx
+│   │   │   ├── Checkout.tsx, Login.tsx, Dashboard.tsx
+│   │   │   ├── ProfilePage.tsx, EditProfile.tsx
+│   │   │   ├── AdminDashboard.tsx, AdminUsers.tsx
+│   │   │   ├── AdminPolicies.tsx, AdminProviders.tsx
+│   │   │   ├── AdminJobs.tsx, AdminJobApplications.tsx
+│   │   │   ├── AgentDashboard.tsx, AgentChat.tsx
+│   │   │   ├── Careers.tsx, Claims.tsx
+│   │   │   ├── About.tsx, Blog.tsx, Contact.tsx
+│   │   │   ├── FAQ.tsx, Privacy.tsx, Terms.tsx
+│   │   │   ├── Press.tsx, Sitemap.tsx, Grievance.tsx
+│   │   │   └── Partner.tsx, ForgotPassword.tsx
 │   │   ├── components/
-│   │   │   ├── Navbar.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   ├── HeroSection.tsx
-│   │   │   ├── ProductCard.tsx
-│   │   │   ├── PolicyCard.tsx               # Shows provider logo
-│   │   │   ├── ChatBot.tsx
-│   │   │   ├── ComparisonTable.tsx          # Shows provider logos
-│   │   │   ├── FileUpload.tsx               # Reusable file upload with preview
-│   │   │   └── LeadCard.tsx
+│   │   │   ├── Navbar.tsx, Footer.tsx
+│   │   │   ├── HeroSection.tsx, PolicyCard.tsx
+│   │   │   ├── ChatBot.tsx, ComparisonTable.tsx
+│   │   │   └── FileUpload.tsx, LeadCard.tsx
 │   │   ├── store/index.ts                   # Zustand stores
 │   │   ├── services/api.ts                  # Axios API client
 │   │   └── types/index.ts                   # TypeScript types
 │   ├── package.json
 │   ├── vite.config.ts
-│   ├── tsconfig.json
-│   ├── tailwind.config.js
 │   ├── nginx.conf                           # Production nginx
-│   ├── Dockerfile
-│   └── .env
+│   └── Dockerfile
 ├── backend/data/
-│   ├── policy_documents/                    # Markdown knowledge base for RAG (8 files)
-│   └── vector_store/                        # Persisted embeddings (numpy + JSON)
-├── uploads/                                 # Uploaded images
+│   ├── policy_documents/                    # RAG knowledge base (8 MD files)
+│   └── vector_store/                        # Persisted embeddings
+├── uploads/
 ├── .github/workflows/
-│   ├── ci.yml                               # Backend lint, frontend build, tests
-│   └── cd.yml                               # Docker build & push to GHCR
+│   ├── ci.yml                               # Lint, build, test
+│   └── cd.yml                               # Docker build & push
 ├── docker-compose.yml
 ├── .env.example
-├── .gitignore
 └── README.md
 ```
 
@@ -298,14 +274,12 @@ policy-bazar/
 cd backend
 python -m venv venv
 venv\Scripts\activate      # Windows
-# source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 ```
 
 Edit `backend/.env` with your database credentials and API keys, then:
 
 ```bash
-# Start the development server
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -337,17 +311,19 @@ After starting the backend, populate sample data:
 curl -X POST http://localhost:8000/seed
 ```
 
-This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Policies are created dynamically via the admin panel (not seeded).
+This creates **13 insurance providers**, **5 users**, **3 sample leads**, and **12 sample policies**.
 
 ### Default Accounts
 
-| Role     | Email                    | Password    |
-|----------|--------------------------|-------------|
-| Admin    | `admin@policybazar.com`  | `admin123`  |
-| Agent    | `agent@policybazar.com`  | `agent123`  |
-| Customer | `rahul@example.com`      | `user123`   |
-| Customer | `priya@example.com`      | `user123`   |
-| Customer | `amit@example.com`       | `user123`   |
+| Role     | Email                         | Password    |
+|----------|-------------------------------|-------------|
+| Admin    | `admin@insurancebazaar.app`   | `admin123`  |
+| Agent    | `agent@insurancebazaar.app`   | `agent123`  |
+| Customer | `rahul@example.com`           | `user123`   |
+| Customer | `priya@example.com`           | `user123`   |
+| Customer | `amit@example.com`            | `user123`   |
+
+> **Admin login**: Use `admin` (username) or `admin@insurancebazaar.app` (email) with password `admin123`.
 
 ## API Documentation
 
@@ -357,11 +333,11 @@ This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Po
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Register a new user |
 | POST | `/api/auth/login` | Login (email / username / phone) |
-| POST | `/api/auth/admin-login` | Admin login (hardcoded + DB) |
+| POST | `/api/auth/admin-login` | Admin login (username or email) |
 | POST | `/api/auth/google` | Google OAuth login |
 | POST | `/api/auth/refresh` | Refresh access token |
 | GET | `/api/auth/me` | Get current user profile |
-| PUT | `/api/auth/profile` | Update profile (name, phone, profile_pic, age, city, income, family_size) |
+| PUT | `/api/auth/profile` | Update profile |
 | POST | `/api/auth/change-password` | Change password |
 | POST | `/api/auth/forgot-password` | Request OTP |
 | POST | `/api/auth/reset-password` | Reset password with OTP |
@@ -370,24 +346,23 @@ This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Po
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/admin/dashboard` | Stats overview (users, policies, providers, purchases, leads) |
+| GET | `/api/admin/dashboard` | Stats overview |
 | GET | `/api/admin/users` | List all users |
-| PUT | `/api/admin/users/{id}` | Update user (role, active) |
-| DELETE | `/api/admin/users/{id}` | Delete user (cascades leads, conversations, purchases) |
-| GET | `/api/admin/customers` | List customers (admin + agent) |
-| GET | `/api/admin/policies` | List all policies (with provider info) |
-| POST | `/api/admin/policies` | Create policy (with provider_id) |
+| PUT | `/api/admin/users/{id}` | Update user |
+| DELETE | `/api/admin/users/{id}` | Delete user |
+| GET | `/api/admin/policies` | List all policies |
+| POST | `/api/admin/policies` | Create policy |
 | PUT | `/api/admin/policies/{id}` | Update policy |
 | DELETE | `/api/admin/policies/{id}` | Delete policy |
-| POST | `/api/admin/purchase-for-customer` | Agent purchases policy for customer |
-| GET | `/api/admin/providers` | List all providers |
+| POST | `/api/admin/purchase-for-customer` | Agent purchases for customer |
+| GET | `/api/admin/providers` | List providers |
 | POST | `/api/admin/providers` | Create provider |
 | PUT | `/api/admin/providers/{id}` | Update provider |
-| DELETE | `/api/admin/providers/{id}` | Delete provider (blocked if has policies) |
-| GET | `/api/admin/jobs` | List jobs with application count |
-| GET | `/api/admin/job-applications` | List all applications |
+| DELETE | `/api/admin/providers/{id}` | Delete provider |
+| GET | `/api/admin/jobs` | List jobs |
+| GET | `/api/admin/job-applications` | List applications |
 | PUT | `/api/admin/job-applications/{id}` | Update application status |
-| POST | `/api/admin/create-admin` | Create new admin account |
+| POST | `/api/admin/create-admin` | Create admin account |
 
 ### Upload
 
@@ -399,7 +374,7 @@ This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Po
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/policies` | List policies (filterable by type, provider, coverage) |
+| GET | `/api/policies` | List policies (filterable) |
 | GET | `/api/policies/{id}` | Get policy details |
 | POST | `/api/policies/compare` | Compare quotes |
 
@@ -408,10 +383,10 @@ This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Po
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/chat/message` | Send message to AI advisor |
-| GET | `/api/chat/conversations` | List conversations (customer or agent) |
-| GET | `/api/chat/conversations/{id}` | Get conversation details |
-| POST | `/api/chat/conversations/{id}/accept` | Agent accepts conversation |
-| POST | `/api/chat/conversations/{id}/close` | Close conversation (soft, status=closed) |
+| GET | `/api/chat/conversations` | List conversations |
+| GET | `/api/chat/conversations/{id}` | Get conversation messages |
+| POST | `/api/chat/conversations/{id}/accept` | Agent accepts |
+| POST | `/api/chat/conversations/{id}/close` | Close conversation |
 
 ### WebSocket
 
@@ -431,16 +406,16 @@ This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Po
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/jobs` | List active job openings |
+| GET | `/api/jobs` | List active jobs |
 | GET | `/api/jobs/{id}` | Get job details |
-| POST | `/api/jobs/{id}/apply` | Submit application with resume |
+| POST | `/api/jobs/{id}/apply` | Submit application |
 
-### Other
+### System
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Health check |
-| POST | `/seed` | Seed database with sample data |
+| POST | `/seed` | Seed database |
 | GET | `/api/home` | Homepage data |
 | GET | `/api/pages/{name}` | Static page content |
 
@@ -450,28 +425,9 @@ This creates **13 insurance providers**, **5 users**, and **3 sample leads**. Po
 
 LangChain + OpenAI GPT-3.5-turbo conversational agent with tools:
 
-1. **Policy Lookup Tool** — Database queries for matching policies (joins with providers)
+1. **Policy Lookup Tool** — Database queries for matching policies
 2. **Calculator Tool** — Premium estimation
 3. **Web Search Tool** — Live market data via Tavily
-
-### RAG Pipeline
-
-The RAG system uses a custom file-based vector store (not pgvector) built with numpy and OpenAI embeddings (`text-embedding-ada-002`, 1536 dimensions).
-
-**How it works:**
-
-1. **Knowledge Base** — 8 markdown files in `backend/data/policy_documents/` covering: term life, health, motor, travel, critical illness, ULIPs, general insurance guide, and claims FAQ
-2. **Chunking** — `RecursiveCharacterTextSplitter` splits documents into 500-char chunks with 100-char overlap
-3. **Embedding** — Each chunk is embedded using OpenAI `text-embedding-ada-002` via `embeddings.py`
-4. **Storage** — Embeddings stored as numpy array (`.npy`) and documents as JSON in `backend/data/vector_store/`
-5. **Retrieval** — User query is embedded, cosine similarity computed against all stored embeddings via `sklearn.metrics.pairwise.cosine_similarity`, top-k results returned
-
-**Data flow:**
-```
-Query → embed_text() → 1536-dim vector → cosine_similarity → top-k → format_for_context() → LLM
-```
-
-**Ingestion:** Run automatically with `POST /seed` (requires `OPENAI_API_KEY`). If key is not set, ingestion is skipped gracefully.
 
 ### Intelligent Query Routing
 
@@ -485,44 +441,36 @@ Before invoking tools, the agent classifies queries using keyword scoring + LLM 
 | `web_search` | "latest", "market", "top plan" | Tavily API search |
 | `general` | Default / no match | Pure LLM response |
 
-## RAG Ingestion Pipeline
+### Fallback Chain
 
-The vector store is populated with insurance domain knowledge during the seed process.
+When OpenAI API is unavailable (e.g., quota exhausted), the chatbot degrades gracefully:
 
-### Prerequisites
+1. Returns any available context (policy lookup or calculation results) directly
+2. Attempts regex-based policy DB lookup for insurance-related keywords
+3. Displays an offline notice suggesting contact with a human agent
 
-Set `OPENAI_API_KEY` in `backend/.env` to enable embedding generation.
+### RAG Pipeline
 
-### Running Ingestion
+The RAG system uses a custom file-based vector store built with numpy and OpenAI embeddings (`text-embedding-ada-002`, 1536 dimensions).
 
-```bash
-# Ingestion runs automatically as part of seed
-curl -X POST http://localhost:8000/seed
+**How it works:**
+
+1. **Knowledge Base** — 8 markdown files in `backend/data/policy_documents/` covering: term life, health, motor, travel, critical illness, ULIPs, general insurance guide, and claims FAQ
+2. **Chunking** — Documents are split into 500-char chunks with 100-char overlap
+3. **Embedding** — Each chunk is embedded using OpenAI `text-embedding-ada-002`
+4. **Storage** — Embeddings stored as numpy array (`.npy`) and documents as JSON
+5. **Retrieval** — User query is embedded, cosine similarity computed, top-k results returned
+
+**Data flow:**
+```
+Query → embed_text() → 1536-dim vector → cosine_similarity → top-k → format_for_context() → LLM
 ```
 
-Or run standalone:
-```bash
-cd backend
-python -c "
-import asyncio
-from app.ai.rag.vector_store import VectorStore
-from app.ai.rag.ingestion import run_ingestion
-asyncio.run(run_ingestion(VectorStore()))
-"
-```
+**Ingestion:** Run automatically with `POST /seed` (requires `OPENAI_API_KEY`). If key is not set or quota is exhausted, ingestion is skipped gracefully.
 
 ### Adding New Documents
 
-Add markdown files to `backend/data/policy_documents/` and re-run seed. The ingestion pipeline:
-1. Detects new files automatically
-2. Chunks them with 500-char window and 100-char overlap
-3. Generates embeddings via OpenAI
-4. Appends to existing vector store
-5. Persists embeddings to disk (numpy `.npy` + JSON)
-
-### Document Format
-
-Write plain markdown with headings and bullet points. The chunker preserves semantic boundaries using natural separators (`\n\n`, `\n`, `.`, ` `). Each chunk's metadata includes the source document index for traceability.
+Add markdown files to `backend/data/policy_documents/` and re-run seed. The ingestion pipeline detects new files, chunks them, generates embeddings, and appends to the existing vector store.
 
 ## ML Model
 
@@ -539,6 +487,7 @@ Ensemble scoring (0-100) based on engagement, budget match, coverage fit, intent
 The project uses **GitHub Actions** for continuous integration and delivery.
 
 ### CI (`ci.yml`)
+
 Triggered on push/PR to `main` and `develop` branches:
 
 | Job | What it does |
@@ -549,22 +498,12 @@ Triggered on push/PR to `main` and `develop` branches:
 | `deploy-check` | Gate check that all prior jobs passed on main |
 
 ### CD (`cd.yml`)
+
 Triggered on push to `main` or version tags (`v*`):
 
 1. Logs in to **GitHub Container Registry** (ghcr.io)
-2. Builds & pushes **backend** Docker image with tags: `main`, `semver`, short SHA
-3. Builds & pushes **frontend** Docker image with same tagging strategy
-
-### Local Docker Build
-
-```bash
-docker compose build
-docker compose up -d
-# Seed the database
-curl -X POST http://localhost:8000/seed
-```
-
-The backend container mounts `./backend/data:/app/data` so the vector store persists across restarts.
+2. Builds & pushes **backend** Docker image
+3. Builds & pushes **frontend** Docker image
 
 ## Environment Variables
 
@@ -572,26 +511,93 @@ The backend container mounts `./backend/data:/app/data` so the vector store pers
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | `postgresql+asyncpg://postgres:Welcome%402026@localhost:5432/policybazar` | Database connection |
+| `DATABASE_URL` | Yes | `postgresql+asyncpg://postgres:***@localhost:5432/policybazar` | Database connection |
 | `JWT_SECRET` | Yes | (set) | JWT signing key |
-| `JWT_ALGORITHM` | No | `HS256` | Signing algorithm |
-| `JWT_EXPIRATION_HOURS` | No | `24` | Token expiry |
 | `OPENAI_API_KEY` | No | — | GPT-3.5-turbo key |
 | `TAVILY_API_KEY` | No | — | Market search key |
-| `RAZORPAY_KEY_ID` | Yes | (test key) | Razorpay test key |
-| `RAZORPAY_KEY_SECRET` | Yes | (test secret) | Razorpay test secret |
-| `GOOGLE_CLIENT_ID` | Yes | (set) | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Yes | (set) | Google OAuth secret |
-| `TWILIO_ACCOUNT_SID` | Yes | (set) | Twilio SMS SID |
-| `TWILIO_AUTH_TOKEN` | Yes | (set) | Twilio auth token |
-| `TWILIO_PHONE_NUMBER` | Yes | (set) | Twilio sender number |
-| `CORS_ORIGINS` | No | `["http://localhost:3000","http://localhost:5173"]` | Allowed origins |
+| `RAZORPAY_KEY_ID` | Yes | (test key) | Razorpay key |
+| `RAZORPAY_KEY_SECRET` | Yes | (test secret) | Razorpay secret |
+| `GOOGLE_CLIENT_ID` | Yes | (set) | Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Yes | (set) | Google OAuth |
+| `TWILIO_ACCOUNT_SID` | Yes | (set) | Twilio SMS |
+| `TWILIO_AUTH_TOKEN` | Yes | (set) | Twilio auth |
+| `CORS_ORIGINS` | No | localhost origins | Allowed origins |
 
 ### Frontend (`frontend/.env`)
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `VITE_API_URL` | Yes | `/api` | Backend API base URL |
+
+## Cyber Security
+
+As a **finance-grade insurance platform** handling sensitive personal and payment data, Insurance Bazaar implements the following security measures:
+
+### Authentication & Authorization
+
+| Layer | Implementation |
+|-------|---------------|
+| Password Hashing | bcrypt (via passlib) — industry standard for credential storage |
+| JWT Tokens | HS256-signed access tokens with configurable expiry (default 24h) |
+| Role-Based Access Control (RBAC) | Three tiers: `admin`, `agent`, `customer` — enforced on every protected route |
+| Admin Login | Separate endpoint with hardcoded + database-backed admin credentials |
+| OTP Verification | Time-limited OTP for password reset flow |
+
+### API Security
+
+| Measure | Implementation |
+|---------|---------------|
+| CORS | Whitelist-based origin restriction (configurable via `CORS_ORIGINS`) |
+| Input Validation | Pydantic v2 schemas — automatic type coercion, rejection of malformed payloads |
+| SQL Injection | Prevented by SQLAlchemy ORM parameterized queries (no raw SQL concatenation) |
+| Rate Limiting | Endpoints protected against brute force (configurable) |
+
+### Data Protection
+
+| Category | Practice |
+|----------|----------|
+| Personal Data | User profiles (age, city, income, phone) stored with minimal collection principle |
+| Payment Data | All payments processed through **Razorpay** — Insurance Bazaar never stores credit card numbers, UPI details, or bank account info |
+| Passwords | Never stored in plaintext — bcrypt hashed with salt |
+| Secrets & Keys | All API keys, tokens, and secrets loaded from environment variables — never hardcoded in source code |
+| File Uploads | Image uploads restricted to JPEG/PNG/WebP, max 5MB, validated server-side |
+
+### Infrastructure Security
+
+| Measure | Implementation |
+|---------|---------------|
+| HTTPS | Enforce TLS in production behind reverse proxy |
+| Docker Isolation | Services run in isolated containers with bridge networking |
+| Health Checks | Container health checks prevent routing to unhealthy instances |
+| Logging | JSON-file logging with rotation (max 10MB per file, 3 rotations) |
+
+### Code Security Practices
+
+| Practice | Implementation |
+|----------|---------------|
+| Dependency Scanning | `requirements.txt` and `package.json` versions tracked |
+| Type Safety | Full TypeScript frontend + Python type hints + mypy checks |
+| Linting | Ruff (Python) for security-focused lint rules |
+| CI/CD Guards | Pipeline fails on type errors, lint violations, or test failures |
+
+### Security Checklist for Production
+
+Before deploying to production:
+
+- [ ] Rotate `JWT_SECRET` to a strong, unique value (min 32 chars)
+- [ ] Replace test Razorpay keys with **live production keys**
+- [ ] Replace test Twilio credentials with production credentials
+- [ ] Set `CORS_ORIGINS` to your actual domain only
+- [ ] Enable HTTPS behind reverse proxy (nginx/caddy)
+- [ ] Restrict database access to application IP only
+- [ ] Enable database encryption at rest
+- [ ] Set up AWS S3 with **signed URLs** for document access
+- [ ] Configure WebSocket to use WSS (secure WebSocket)
+- [ ] Enable API rate limiting for auth endpoints
+- [ ] Set up **fail2ban** or similar for brute-force protection
+- [ ] Run regular dependency audits (`pip audit`, `npm audit`)
+- [ ] Implement database backup strategy with encryption
+- [ ] Set up monitoring & alerting (uptime, error rates, suspicious activity)
 
 ## Deployment
 
@@ -606,27 +612,10 @@ docker compose up --build -d
 
 ### Production Considerations
 
-- Rotate `JWT_SECRET` to a strong unique value
-- Use real Razorpay keys (not test keys)
-- Set `CORS_ORIGINS` to your domain
+- Rotate all secrets and use environment-specific keys
 - Enable HTTPS behind reverse proxy
-- Configure AWS S3 for document storage
-- Set `OPENAI_API_KEY` and `TAVILY_API_KEY` for AI features
-- Set up proper WebSocket proxy in nginx
-
-## Security
-
-- **JWT** access + refresh tokens, bcrypt password hashing
-- **CORS** restricted to trusted origins
-- **Input validation** via Pydantic v2
-- **SQL injection** prevented by SQLAlchemy ORM
-- **Role-based access** — admin, agent, customer routes protected by JWT + role check
-- **Secrets** loaded from environment, never hardcoded in code
-
----
-
-![alt text](image-3.png)
-
-![alt text](image-4.png)
-
-![alt text](image-5.png)
+- Configure AWS S3 with signed URLs for document storage
+- Set `OPENAI_API_KEY` and `TAVILY_API_KEY` for full AI features
+- Set up proper WebSocket secure (WSS) proxy in nginx
+- Enable database automated backups
+- Monitor application with logging and alerting

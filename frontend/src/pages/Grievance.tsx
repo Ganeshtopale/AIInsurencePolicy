@@ -37,7 +37,7 @@ export default function Grievance() {
             <ol className="space-y-4 text-gray-600">
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">1</span>
-                <span>Send an email to <a href="mailto:grievance@policybazar.ai" className="font-semibold text-blue-600">grievance@policybazar.ai</a> with your policy details and issue description.</span>
+                <span>Send an email to <a href="mailto:grievance@insurancebazaar.app" className="font-semibold text-blue-600">grievance@insurancebazaar.app</a> with your policy details and issue description.</span>
               </li>
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">2</span>
@@ -63,7 +63,7 @@ export default function Grievance() {
               </div>
               <div className="flex items-center gap-3 text-gray-600">
                 <Mail className="h-5 w-5 text-orange-500" />
-                <a href="mailto:grievance@policybazar.ai" className="text-blue-600 hover:underline">grievance@policybazar.ai</a>
+                <a href="mailto:grievance@insurancebazaar.app" className="text-blue-600 hover:underline">grievance@insurancebazaar.app</a>
               </div>
               <div className="flex items-center gap-3 text-gray-600">
                 <Phone className="h-5 w-5 text-orange-500" />

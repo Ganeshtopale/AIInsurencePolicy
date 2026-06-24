@@ -3,32 +3,32 @@ import { Calendar, ExternalLink } from 'lucide-react'
 export default function Press() {
   const releases = [
     {
-      title: 'PolicyBazar AI Crosses 10 Million Customer Milestone',
+      title: 'Insurance Bazaar Crosses 10 Million Customer Milestone',
       date: '12 Jan 2026',
-      summary: 'PolicyBazar AI, India\'s leading AI-powered insurance marketplace, announced that it has crossed 10 million registered customers.',
+      summary: 'Insurance Bazaar, India\'s leading AI-powered insurance marketplace, announced that it has crossed 10 million registered customers.',
     },
     {
-      title: 'PolicyBazar AI Launches AI-Powered Claim Assistant',
+      title: 'Insurance Bazaar Launches AI-Powered Claim Assistant',
       date: '5 Dec 2025',
       summary: 'New AI-powered feature simplifies the insurance claim process, reducing average claim settlement time by 60%.',
     },
     {
-      title: 'PolicyBazar AI Raises $50 Million in Series C Funding',
+      title: 'Insurance Bazaar Raises $50 Million in Series C Funding',
       date: '20 Oct 2025',
       summary: 'The company will use the funds to expand its AI capabilities, enter new markets, and hire top talent.',
     },
     {
-      title: 'PolicyBazar AI Partners with 10 New Insurance Providers',
+      title: 'Insurance Bazaar Partners with 10 New Insurance Providers',
       date: '15 Sep 2025',
       summary: 'Strategic partnerships expand the platform\'s policy offerings across health, life, motor, and travel insurance.',
     },
     {
-      title: 'PolicyBazar AI Wins "Best InsurTech Platform 2025" Award',
+      title: 'Insurance Bazaar Wins "Best InsurTech Platform 2025" Award',
       date: '8 Aug 2025',
       summary: 'Recognized at the India InsurTech Summit for innovation in AI-driven insurance distribution.',
     },
     {
-      title: 'PolicyBazar AI Introduces Real-Time Policy Comparison',
+      title: 'Insurance Bazaar Introduces Real-Time Policy Comparison',
       date: '1 Jun 2025',
       summary: 'New real-time comparison feature allows customers to compare policies across 50+ providers instantly.',
     },
@@ -39,7 +39,7 @@ export default function Press() {
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold text-gray-900">Press Releases</h1>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600">Latest news and announcements from PolicyBazar AI.</p>
+          <p className="mx-auto max-w-2xl text-lg text-gray-600">Latest news and announcements from Insurance Bazaar.</p>
         </div>
 
         <div className="space-y-6">
@@ -61,7 +61,7 @@ export default function Press() {
 
         <div className="mt-12 text-center">
           <p className="text-gray-500">For media inquiries, please contact us at</p>
-          <a href="mailto:press@policybazar.ai" className="font-semibold text-blue-600 hover:underline">press@policybazar.ai</a>
+          <a href="mailto:press@insurancebazaar.app" className="font-semibold text-blue-600 hover:underline">press@insurancebazaar.app</a>
         </div>
       </div>
     </div>

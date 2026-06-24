@@ -38,7 +38,7 @@ export default function Privacy() {
         <div className="prose prose-gray max-w-none">
           <div className="mb-8 rounded-xl bg-white p-6 shadow-sm">
             <p className="text-gray-600 leading-relaxed">
-              AI Insurance Bazaar Pvt. Ltd. ("PolicyBazar AI," "we," "us," or "our") is committed to protecting the privacy of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
+              AI Insurance Bazaar Pvt. Ltd. ("Insurance Bazaar," "we," "us," or "our") is committed to protecting the privacy of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
             </p>
           </div>
 
@@ -77,7 +77,7 @@ export default function Privacy() {
             <Mail className="mx-auto mb-2 h-6 w-6 text-blue-600" />
             <p className="text-blue-800">
               For privacy-related queries, contact us at{' '}
-              <a href="mailto:privacy@policybazar.ai" className="font-semibold underline">privacy@policybazar.ai</a>
+              <a href="mailto:privacy@insurancebazaar.app" className="font-semibold underline">privacy@insurancebazaar.app</a>
             </p>
             <Link to="/contact" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline">
               Contact Us <ArrowRight className="h-3 w-3" />

@@ -6,15 +6,15 @@ const faqs = [
   {
     category: 'General',
     items: [
-      { q: 'What is PolicyBazar AI?', a: 'PolicyBazar AI is India\'s first AI-powered insurance marketplace. We help you compare, choose, and buy insurance policies from 50+ insurers at the best prices.' },
-      { q: 'Is PolicyBazar AI IRDAI registered?', a: 'Yes, we are an IRDAI-registered insurance broker (Registration No: XXX). Your policy purchases through our platform are completely valid and recognized by all insurers.' },
-      { q: 'Do I need to pay any fees for using PolicyBazar AI?', a: 'No, our services are completely free for customers. We earn from the insurance companies when you purchase a policy through our platform.' },
+      { q: 'What is Insurance Bazaar?', a: 'Insurance Bazaar is India\'s first AI-powered insurance marketplace. We help you compare, choose, and buy insurance policies from 50+ insurers at the best prices.' },
+      { q: 'Is Insurance Bazaar IRDAI registered?', a: 'Yes, we are an IRDAI-registered insurance broker (Registration No: XXX). Your policy purchases through our platform are completely valid and recognized by all insurers.' },
+      { q: 'Do I need to pay any fees for using Insurance Bazaar?', a: 'No, our services are completely free for customers. We earn from the insurance companies when you purchase a policy through our platform.' },
     ],
   },
   {
     category: 'Buying Policy',
     items: [
-      { q: 'How do I buy a policy on PolicyBazar AI?', a: 'Simply browse policies, compare quotes side-by-side, select the one that suits you best, and complete the purchase online. Our AI advisor can also help recommend the right policy.' },
+      { q: 'How do I buy a policy on Insurance Bazaar?', a: 'Simply browse policies, compare quotes side-by-side, select the one that suits you best, and complete the purchase online. Our AI advisor can also help recommend the right policy.' },
       { q: 'Can I compare policies from different companies?', a: 'Yes, you can compare policies from 50+ insurers based on features, premium, coverage, claim settlement ratio, and more.' },
       { q: 'Is it safe to buy insurance online?', a: 'Absolutely. We use 256-bit SSL encryption to protect your data. All transactions are secure and your information is never shared without your consent.' },
     ],

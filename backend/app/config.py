@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     AWS_REGION: str = "ap-south-1"
     CLOUDFRONT_URL: str = ""
 
-    OSM_USER_AGENT: str = "Orento-Property-Platform/1.0"
+    OSM_USER_AGENT: str = "InsuranceBazaar/1.0"
 
     TWILIO_ACCOUNT_SID: str = "AC9359ad40279803772ba2d03c1c6bcd69"
     TWILIO_AUTH_TOKEN: str = "42284942916b52132cf640e80b7aac05"
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     PLATFORM_COMMISSION_PERCENT: float = 10.0
 
     ADMIN_USERNAME: str = "admin"
-    ADMIN_EMAIL: str = "admin@orento.com"
+    ADMIN_EMAIL: str = "admin@insurancebazaar.app"
     ADMIN_PASSWORD: str = "Welcome@2026"
     ADMIN_MOBILE: str = "8669065575"
 

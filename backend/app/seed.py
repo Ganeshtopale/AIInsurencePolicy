@@ -28,8 +28,8 @@ PROVIDERS = [
 ]
 
 USERS = [
-    {"name": "Admin User", "email": "admin@policybazar.com", "password": "admin123", "role": UserRole.ADMIN, "username": "admin"},
-    {"name": "Agent Sharma", "email": "agent@policybazar.com", "password": "agent123", "role": UserRole.AGENT},
+    {"name": "Admin User", "email": "admin@insurancebazaar.app", "password": "admin123", "role": UserRole.ADMIN, "username": "admin"},
+    {"name": "Agent Sharma", "email": "agent@insurancebazaar.app", "password": "agent123", "role": UserRole.AGENT},
     {"name": "Rahul Kumar", "email": "rahul@example.com", "password": "user123", "role": UserRole.CUSTOMER},
     {"name": "Priya Singh", "email": "priya@example.com", "password": "user123", "role": UserRole.CUSTOMER},
     {"name": "Amit Patel", "email": "amit@example.com", "password": "user123", "role": UserRole.CUSTOMER},

@@ -37,9 +37,9 @@ export default function Contact() {
             </div>
             <h3 className="mb-2 font-semibold text-gray-900">Email</h3>
             <p className="text-sm text-gray-500">General Enquiries</p>
-            <a href="mailto:support@policybazar.ai" className="font-semibold text-blue-600 hover:underline">support@policybazar.ai</a>
+            <a href="mailto:support@insurancebazaar.app" className="font-semibold text-blue-600 hover:underline">support@insurancebazaar.app</a>
             <p className="mt-2 text-sm text-gray-500">Press & Media</p>
-            <a href="mailto:press@policybazar.ai" className="font-semibold text-blue-600 hover:underline">press@policybazar.ai</a>
+            <a href="mailto:press@insurancebazaar.app" className="font-semibold text-blue-600 hover:underline">press@insurancebazaar.app</a>
           </div>
           <div className="rounded-xl bg-white p-6 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 text-green-600">
@@ -47,7 +47,7 @@ export default function Contact() {
             </div>
             <h3 className="mb-2 font-semibold text-gray-900">Office</h3>
             <p className="text-sm text-gray-600">AI Insurance Bazaar Pvt. Ltd.</p>
-            <p className="text-sm text-gray-500">Mumbai, Maharashtra, India</p>
+            <p className="text-sm text-gray-500">Omkar Nagar, Nagpur Maharashtra, India</p>
           </div>
         </div>
 
