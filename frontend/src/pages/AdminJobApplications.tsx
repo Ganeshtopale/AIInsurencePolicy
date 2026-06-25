@@ -239,7 +239,7 @@ export default function AdminJobApplications() {
                       <ApplicationStatusStepper
                         status={selected.status}
                         interactive={true}
-                        onUpdate={(s) => updateStatus(selected.id, s)}
+                        onUpdate={(s) => updateStatus(selected.id, s as ApplicationStatus)}
                         updating={updatingId === selected.id}
                       />
                     </div>

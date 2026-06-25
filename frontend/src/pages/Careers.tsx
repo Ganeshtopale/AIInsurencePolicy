@@ -13,7 +13,6 @@ export default function Careers() {
   const [showGeneral, setShowGeneral] = useState(false)
   const [showDetails, setShowDetails] = useState<Job | null>(null)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
-  const [pendingJob, setPendingJob] = useState<Job | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -22,7 +21,6 @@ export default function Careers() {
 
   const requireAuth = (job: Job, action: 'apply' | 'details') => {
     if (!isAuthenticated) {
-      setPendingJob(job)
       setShowLoginPrompt(true)
       return
     }
