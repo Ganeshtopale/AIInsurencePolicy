@@ -130,6 +130,7 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db), _=Depend
     from app.models.purchase import Purchase
     from app.models.payment import Payment
     from app.models.task import Task
+    from app.models.job import JobApplication
     from sqlalchemy import delete as sa_delete
 
     user = await db.get(User, user_id)
@@ -145,6 +146,7 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db), _=Depend
     await db.execute(sa_delete(Purchase).where(Purchase.user_id == user_id))
     await db.execute(sa_delete(Payment).where(Payment.user_id == user_id))
     await db.execute(sa_delete(Task).where(Task.assigned_agent_id == user_id))
+    await db.execute(sa_delete(JobApplication).where(JobApplication.user_id == user_id))
 
     await db.delete(user)
     await db.commit()
@@ -304,7 +306,7 @@ async def update_application_status(app_id: int, body: dict, db: AsyncSession = 
 @router.post("/create-admin", status_code=status.HTTP_201_CREATED)
 async def create_admin(body: AdminCreate, db: AsyncSession = Depends(get_db), _=Depends(get_admin_user)):
     from app.models.user import User, UserRole
-    from app.api.auth import pwd_context
+    from app.api.auth import _hash_password
 
     result = await db.execute(select(User).where(
         (User.email == body.email) | (User.username == body.username)
@@ -317,7 +319,7 @@ async def create_admin(body: AdminCreate, db: AsyncSession = Depends(get_db), _=
         email=body.email,
         phone=body.phone,
         username=body.username,
-        hashed_password=pwd_context.hash(body.password),
+        hashed_password=_hash_password(body.password),
         role=UserRole.ADMIN,
     )
     db.add(user)

@@ -1,68 +1,116 @@
 import asyncio
+import json
 import logging
+import os
+import random
 from datetime import datetime, timezone
+from pathlib import Path
 
 from app.database import async_session, engine, Base
 from app.models.user import User, UserRole
 from app.models.lead import Lead, LeadStatus
 from app.models.policy import Policy, PolicyType
-from app.api.auth import pwd_context
+from app.api.auth import _hash_password
 
 logger = logging.getLogger(__name__)
 
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-PROVIDERS = [
-    {"name": "HDFC Life", "provider_type": "life", "rating": 4.5},
-    {"name": "ICICI Prudential", "provider_type": "life", "rating": 4.4},
-    {"name": "Tata AIA", "provider_type": "life", "rating": 4.3},
-    {"name": "Bajaj Allianz", "provider_type": "general", "rating": 4.4},
-    {"name": "LIC", "provider_type": "life", "rating": 4.6},
-    {"name": "SBI Life", "provider_type": "life", "rating": 4.3},
-    {"name": "Star Health", "provider_type": "general", "rating": 4.2},
-    {"name": "HDFC Ergo", "provider_type": "general", "rating": 4.5},
-    {"name": "New India Assurance", "provider_type": "general", "rating": 4.1},
-    {"name": "Max Bupa", "provider_type": "general", "rating": 4.3},
-    {"name": "ICICI Lombard", "provider_type": "general", "rating": 4.4},
-    {"name": "Kotak Mahindra", "provider_type": "life", "rating": 4.2},
-    {"name": "United India", "provider_type": "general", "rating": 4.0},
+FIRST_NAMES = ["Rahul", "Priya", "Amit", "Sneha", "Vikram", "Anjali", "Rohit", "Neha", "Arjun", "Kavita"]
+LAST_NAMES = ["Sharma", "Patel", "Singh", "Verma", "Kumar", "Gupta", "Reddy", "Nair", "Joshi", "Das"]
+
+LEAD_CONFIGS = [
+    {"score_range": (70, 100), "prob_range": (0.6, 0.9), "status": LeadStatus.QUALIFIED, "summaries": [
+        "Interested in term life insurance for family",
+        "Looking for comprehensive health coverage",
+        "Needs investment-linked insurance plan",
+    ]},
+    {"score_range": (40, 69), "prob_range": (0.3, 0.59), "status": LeadStatus.CONTACTED, "summaries": [
+        "Comparing motor insurance options",
+        "Exploring health insurance for parents",
+        "Inquired about ULIP plans",
+    ]},
+    {"score_range": (10, 39), "prob_range": (0.1, 0.29), "status": LeadStatus.NEW, "summaries": [
+        "Browsed policy comparison page",
+        "Requested premium estimate",
+        "Viewed term insurance details",
+    ]},
 ]
 
-USERS = [
-    {"name": "Admin User", "email": "admin@insurancebazaar.app", "password": "admin123", "role": UserRole.ADMIN, "username": "admin"},
-    {"name": "Agent Sharma", "email": "agent@insurancebazaar.app", "password": "agent123", "role": UserRole.AGENT},
-    {"name": "Rahul Kumar", "email": "rahul@example.com", "password": "user123", "role": UserRole.CUSTOMER},
-    {"name": "Priya Singh", "email": "priya@example.com", "password": "user123", "role": UserRole.CUSTOMER},
-    {"name": "Amit Patel", "email": "amit@example.com", "password": "user123", "role": UserRole.CUSTOMER},
-]
+
+def _load_json(filename: str):
+    path = DATA_DIR / filename
+    if not path.exists():
+        logger.warning("%s not found, skipping", path)
+        return []
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
 
-LEADS = [
-    {"user_email": "rahul@example.com", "lead_score": 85.0, "purchase_probability": 0.75, "conversation_summary": "Interested in term life insurance for family", "status": LeadStatus.QUALIFIED},
-    {"user_email": "priya@example.com", "lead_score": 60.0, "purchase_probability": 0.50, "conversation_summary": "Looking for health insurance for parents", "status": LeadStatus.CONTACTED},
-    {"user_email": "amit@example.com", "lead_score": 40.0, "purchase_probability": 0.30, "conversation_summary": "Comparing motor insurance options", "status": LeadStatus.NEW},
-]
+def _generate_users(config: dict):
+    """Generate users based on config: {admin: N, agent: N, customer: N}."""
+    users = []
+    idx = 0
+    for role, count in config.items():
+        for i in range(count):
+            idx += 1
+            first = random.choice(FIRST_NAMES)
+            last = random.choice(LAST_NAMES)
+            suffix = f"{i}" if i > 0 else ""
+            username = f"{role}{suffix}" if role != "admin" else role
+            users.append({
+                "name": f"{first} {last}",
+                "email": f"{first.lower()}.{last.lower()}{suffix}@insurancebazaar.app",
+                "password": "seed123",
+                "role": UserRole[role.upper()],
+                "username": username if role in ("admin", "agent") else None,
+            })
+    return users
+
+
+def _generate_leads(created_users: dict):
+    """Generate leads for a random subset of customer users."""
+    customers = [u for u in created_users.values() if u.role == UserRole.CUSTOMER]
+    leads = []
+    for idx, user in enumerate(customers):
+        cfg = LEAD_CONFIGS[idx % len(LEAD_CONFIGS)]
+        leads.append({
+            "user_email": user.email,
+            "lead_score": round(random.uniform(*cfg["score_range"]), 1),
+            "purchase_probability": round(random.uniform(*cfg["prob_range"]), 2),
+            "conversation_summary": random.choice(cfg["summaries"]),
+            "status": cfg["status"],
+        })
+    return leads
 
 
 async def seed_database():
+    providers_data = _load_json("providers.json")
+    policies_data = _load_json("policies.json")
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     async with async_session() as session:
         from app.models.provider import Provider
+
         created_providers = {}
-        for p in PROVIDERS:
-            provider = Provider(name=p["name"], provider_type=p["provider_type"], rating=p["rating"])
+        for p in providers_data:
+            provider = Provider(name=p["name"], provider_type=p["type"], rating=p["rating"])
             session.add(provider)
             await session.flush()
             created_providers[p["name"]] = provider
 
+        users_config = {"admin": 1, "agent": 2, "customer": 5}
+        users_data = _generate_users(users_config)
+
         created_users = {}
-        for u in USERS:
+        for u in users_data:
             user = User(
                 name=u["name"],
                 email=u["email"],
-                hashed_password=pwd_context.hash(u["password"]),
+                hashed_password=_hash_password(u["password"]),
                 role=u["role"],
                 username=u.get("username"),
             )
@@ -70,7 +118,8 @@ async def seed_database():
             await session.flush()
             created_users[u["email"]] = user
 
-        for lead_data in LEADS:
+        leads_data = _generate_leads(created_users)
+        for lead_data in leads_data:
             user = created_users.get(lead_data["user_email"])
             if user:
                 lead = Lead(
@@ -82,28 +131,14 @@ async def seed_database():
                 )
                 session.add(lead)
 
-        POLICIES = [
-            {"name": "HDFC Life Click 2 Protect", "provider_name": "HDFC Life", "policy_type": PolicyType.TERM, "premium": 12500, "coverage": 10000000, "csr": 98.5, "desc": "Comprehensive term insurance plan with life cover and critical illness option"},
-            {"name": "LIC Jeevan Anand", "provider_name": "LIC", "policy_type": PolicyType.TERM, "premium": 9800, "coverage": 5000000, "csr": 97.8, "desc": "Traditional term plan with maturity benefit and life coverage"},
-            {"name": "ICICI Pru iProtect Smart", "provider_name": "ICICI Prudential", "policy_type": PolicyType.TERM, "premium": 11000, "coverage": 7500000, "csr": 96.2, "desc": "Flexible term insurance with return of premium option"},
-            {"name": "Star Health Comprehensive", "provider_name": "Star Health", "policy_type": PolicyType.HEALTH, "premium": 15000, "coverage": 500000, "csr": 94.5, "desc": "Individual health insurance with cashless hospitalization"},
-            {"name": "Max Bupa Health Companion", "provider_name": "Max Bupa", "policy_type": PolicyType.HEALTH, "premium": 18000, "coverage": 1000000, "csr": 93.1, "desc": "Family floater health insurance with wellness benefits"},
-            {"name": "HDFC Ergo Health Suraksha", "provider_name": "HDFC Ergo", "policy_type": PolicyType.HEALTH, "premium": 13500, "coverage": 750000, "csr": 95.0, "desc": "Affordable health plan with day-care procedure coverage"},
-            {"name": "ICICI Lombard Motor Insurance", "provider_name": "ICICI Lombard", "policy_type": PolicyType.MOTOR, "premium": 8500, "coverage": 500000, "csr": 92.3, "desc": "Comprehensive motor insurance with zero depreciation add-on"},
-            {"name": "Bajaj Allianz Car Insurance", "provider_name": "Bajaj Allianz", "policy_type": PolicyType.MOTOR, "premium": 7200, "coverage": 400000, "csr": 93.8, "desc": "Private car insurance with roadside assistance and NCB protection"},
-            {"name": "New India Motor Policy", "provider_name": "New India Assurance", "policy_type": PolicyType.MOTOR, "premium": 6500, "coverage": 350000, "csr": 91.0, "desc": "Two-wheeler and car insurance with third-party liability"},
-            {"name": "Tata AIA Fortune Pro", "provider_name": "Tata AIA", "policy_type": PolicyType.ULIP, "premium": 50000, "coverage": 10000000, "csr": 94.0, "desc": "Unit-linked investment plan with life cover and market returns"},
-            {"name": "Kotak Mahindra Classic", "provider_name": "Kotak Mahindra", "policy_type": PolicyType.INVESTMENT, "premium": 25000, "coverage": 5000000, "csr": 95.2, "desc": "Investment-oriented policy with guaranteed returns"},
-            {"name": "SBI Life Smart Shield", "provider_name": "SBI Life", "policy_type": PolicyType.TERM, "premium": 10500, "coverage": 6000000, "csr": 97.0, "desc": "Affordable term plan with accidental death benefit"},
-        ]
-
-        for pd in POLICIES:
-            provider = created_providers.get(pd["provider_name"])
+        for pd in policies_data:
+            provider = created_providers.get(pd["provider"])
             if provider:
+                policy_type = getattr(PolicyType, pd["type"], PolicyType.TERM)
                 policy = Policy(
                     name=pd["name"],
                     provider_id=provider.id,
-                    policy_type=pd["policy_type"],
+                    policy_type=policy_type,
                     premium=pd["premium"],
                     coverage_amount=pd["coverage"],
                     claim_settlement_ratio=pd["csr"],

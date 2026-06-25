@@ -537,7 +537,7 @@ As a **finance-grade insurance platform** handling sensitive personal and paymen
 
 | Layer | Implementation |
 |-------|---------------|
-| Password Hashing | bcrypt (via passlib) — industry standard for credential storage |
+| Password Hashing | bcrypt — industry standard for credential storage |
 | JWT Tokens | HS256-signed access tokens with configurable expiry (default 24h) |
 | Role-Based Access Control (RBAC) | Three tiers: `admin`, `agent`, `customer` — enforced on every protected route |
 | Admin Login | Separate endpoint with hardcoded + database-backed admin credentials |

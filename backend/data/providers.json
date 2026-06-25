@@ -1,0 +1,15 @@
+[
+  {"name": "HDFC Life", "type": "life", "rating": 4.5},
+  {"name": "ICICI Prudential", "type": "life", "rating": 4.4},
+  {"name": "Tata AIA", "type": "life", "rating": 4.3},
+  {"name": "Bajaj Allianz", "type": "general", "rating": 4.4},
+  {"name": "LIC", "type": "life", "rating": 4.6},
+  {"name": "SBI Life", "type": "life", "rating": 4.3},
+  {"name": "Star Health", "type": "general", "rating": 4.2},
+  {"name": "HDFC Ergo", "type": "general", "rating": 4.5},
+  {"name": "New India Assurance", "type": "general", "rating": 4.1},
+  {"name": "Max Bupa", "type": "general", "rating": 4.3},
+  {"name": "ICICI Lombard", "type": "general", "rating": 4.4},
+  {"name": "Kotak Mahindra", "type": "life", "rating": 4.2},
+  {"name": "United India", "type": "general", "rating": 4.0}
+]

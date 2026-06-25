@@ -5,7 +5,7 @@ import string
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,11 @@ from app.database import get_db
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def _verify_password(plain: str, hashed: str) -> bool:
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 class UserCreate(BaseModel):
@@ -183,7 +187,7 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         if result.scalar_one_or_none():
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
 
-    hashed = pwd_context.hash(user_data.password)
+    hashed = _hash_password(user_data.password)
     user = User(
         email=user_data.email,
         hashed_password=hashed,
@@ -214,7 +218,7 @@ async def admin_login(credentials: UserLogin, db: AsyncSession = Depends(get_db)
                 name="Super Admin",
                 email=settings.ADMIN_EMAIL,
                 username=settings.ADMIN_USERNAME,
-                hashed_password=pwd_context.hash(settings.ADMIN_PASSWORD),
+                hashed_password=_hash_password(settings.ADMIN_PASSWORD),
                 role=UserRole.ADMIN,
                 phone=settings.ADMIN_MOBILE,
             )
@@ -232,7 +236,7 @@ async def admin_login(credentials: UserLogin, db: AsyncSession = Depends(get_db)
     if not user:
         result = await db.execute(select(User).where(User.email == username))
         user = result.scalar_one_or_none()
-    if not user or not pwd_context.verify(password, user.hashed_password):
+    if not user or not _verify_password(password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid admin credentials")
 
     if user.role != UserRole.ADMIN:
@@ -258,7 +262,7 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
 
     result = await db.execute(select(User).where(or_(*filters)))
     user = result.scalar_one_or_none()
-    if not user or not pwd_context.verify(credentials.password, user.hashed_password):
+    if not user or not _verify_password(credentials.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     return _build_auth_response(user)
@@ -330,9 +334,9 @@ async def change_password(body: ChangePasswordRequest, db: AsyncSession = Depend
     from app.models.user import User
 
     user = await db.get(User, current_user.id)
-    if not pwd_context.verify(body.current_password, user.hashed_password):
+    if not _verify_password(body.current_password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
-    user.hashed_password = pwd_context.hash(body.new_password)
+    user.hashed_password = _hash_password(body.new_password)
     await db.commit()
     return {"message": "Password changed successfully"}
 
@@ -370,7 +374,7 @@ async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(
     if not user.otp_expiry or datetime.now(timezone.utc) > user.otp_expiry:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP expired")
 
-    user.hashed_password = pwd_context.hash(body.new_password)
+    user.hashed_password = _hash_password(body.new_password)
     user.otp = None
     user.otp_expiry = None
     await db.commit()

@@ -1,0 +1,14 @@
+[
+  {"name": "HDFC Life Click 2 Protect", "provider": "HDFC Life", "type": "TERM", "premium": 12500, "coverage": 10000000, "csr": 98.5, "desc": "Comprehensive term insurance plan with life cover and critical illness option"},
+  {"name": "LIC Jeevan Anand", "provider": "LIC", "type": "TERM", "premium": 9800, "coverage": 5000000, "csr": 97.8, "desc": "Traditional term plan with maturity benefit and life coverage"},
+  {"name": "ICICI Pru iProtect Smart", "provider": "ICICI Prudential", "type": "TERM", "premium": 11000, "coverage": 7500000, "csr": 96.2, "desc": "Flexible term insurance with return of premium option"},
+  {"name": "Star Health Comprehensive", "provider": "Star Health", "type": "HEALTH", "premium": 15000, "coverage": 500000, "csr": 94.5, "desc": "Individual health insurance with cashless hospitalization"},
+  {"name": "Max Bupa Health Companion", "provider": "Max Bupa", "type": "HEALTH", "premium": 18000, "coverage": 1000000, "csr": 93.1, "desc": "Family floater health insurance with wellness benefits"},
+  {"name": "HDFC Ergo Health Suraksha", "provider": "HDFC Ergo", "type": "HEALTH", "premium": 13500, "coverage": 750000, "csr": 95.0, "desc": "Affordable health plan with day-care procedure coverage"},
+  {"name": "ICICI Lombard Motor Insurance", "provider": "ICICI Lombard", "type": "MOTOR", "premium": 8500, "coverage": 500000, "csr": 92.3, "desc": "Comprehensive motor insurance with zero depreciation add-on"},
+  {"name": "Bajaj Allianz Car Insurance", "provider": "Bajaj Allianz", "type": "MOTOR", "premium": 7200, "coverage": 400000, "csr": 93.8, "desc": "Private car insurance with roadside assistance and NCB protection"},
+  {"name": "New India Motor Policy", "provider": "New India Assurance", "type": "MOTOR", "premium": 6500, "coverage": 350000, "csr": 91.0, "desc": "Two-wheeler and car insurance with third-party liability"},
+  {"name": "Tata AIA Fortune Pro", "provider": "Tata AIA", "type": "ULIP", "premium": 50000, "coverage": 10000000, "csr": 94.0, "desc": "Unit-linked investment plan with life cover and market returns"},
+  {"name": "Kotak Mahindra Classic", "provider": "Kotak Mahindra", "type": "INVESTMENT", "premium": 25000, "coverage": 5000000, "csr": 95.2, "desc": "Investment-oriented policy with guaranteed returns"},
+  {"name": "SBI Life Smart Shield", "provider": "SBI Life", "type": "TERM", "premium": 10500, "coverage": 6000000, "csr": 97.0, "desc": "Affordable term plan with accidental death benefit"}
+]
