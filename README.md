@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Insurance Bazaar — AI Insurance Marketplace
 
 An AI-powered insurance comparison and policy recommendation platform built with React, FastAPI, PostgreSQL, LangChain, and real-time WebSocket chat.
@@ -619,3 +620,6 @@ docker compose up --build -d
 - Set up proper WebSocket secure (WSS) proxy in nginx
 - Enable database automated backups
 - Monitor application with logging and alerting
+=======
+# policybazar
+>>>>>>> 4a70a100fef1b799512f2987371f34a8089d6355
