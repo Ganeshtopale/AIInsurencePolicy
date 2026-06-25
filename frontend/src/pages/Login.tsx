@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -25,6 +25,8 @@ import { useAuthStore } from '@/store';
 type Tab = 'login' | 'register' | 'admin';
 
 export default function Login() {
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
   const [tab, setTab] = useState<Tab>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,7 @@ export default function Login() {
     try {
       const res = await authApi.login({ email: loginEmail, password: loginPassword });
       loginStore(res.user, res.access_token);
-      window.location.href = '/dashboard';
+      window.location.href = redirectTo;
     } catch (err: any) {
       setLoginError(err?.response?.data?.detail || err?.response?.data?.message || 'Invalid email or password');
     } finally {
@@ -81,7 +83,7 @@ export default function Login() {
           google_id: userInfo.sub,
         });
         loginStore(res.user, res.access_token);
-        window.location.href = '/dashboard';
+        window.location.href = redirectTo;
       } catch {
         setLoginError('Google login failed');
       } finally {
@@ -132,7 +134,7 @@ export default function Login() {
     try {
       const res = await authApi.register({ name: regName, email: regEmail, password: regPassword, phone: regPhone });
       loginStore(res.user, res.access_token);
-      window.location.href = '/dashboard';
+      window.location.href = redirectTo;
     } catch (err: any) {
       setRegError(err?.response?.data?.detail || err?.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

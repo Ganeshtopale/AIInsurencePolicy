@@ -38,13 +38,13 @@ export default function AdminJobs() {
   const load = useCallback(() => {
     setLoading(true)
     adminApi
-    .listJobs()
-    .then(setJobs)
-    .catch((err) => {
+      .listJobs()
+      .then(setJobs)
+      .catch((err) => {
         console.error('Failed to load jobs:', err)
         setJobs([])
       })
-    .finally(() => setLoading(false))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function AdminJobs() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.title.trim() ||!form.department.trim() ||!form.location.trim()) {
+    if (!form.title.trim() || !form.department.trim() || !form.location.trim()) {
       setError('Title, department, and location are required')
       return
     }
@@ -138,7 +138,7 @@ export default function AdminJobs() {
     }
   }
 
-  if (user?.role!== 'admin') return <div className="p-8 text-center text-red-500">Access denied</div>
+  if (user?.role !== 'admin') return <div className="p-8 text-center text-red-500">Access denied</div>
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -163,7 +163,7 @@ export default function AdminJobs() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 flex items-center justify-between border-b bg-white px-6 py-4">
-                <h2 className="text-lg font-bold text-gray-900">{editing? 'Edit Job' : 'Add New Job'}</h2>
+                <h2 className="text-lg font-bold text-gray-900">{editing ? 'Edit Job' : 'Add New Job'}</h2>
                 <button
                   onClick={handleCloseForm}
                   className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -182,7 +182,7 @@ export default function AdminJobs() {
                       id="title"
                       type="text"
                       value={form.title}
-                      onChange={(e) => setForm({...form, title: e.target.value })}
+                      onChange={(e) => setForm({ ...form, title: e.target.value })}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                       placeholder="e.g. Senior Frontend Engineer"
                     />
@@ -195,7 +195,7 @@ export default function AdminJobs() {
                       id="department"
                       type="text"
                       value={form.department}
-                      onChange={(e) => setForm({...form, department: e.target.value })}
+                      onChange={(e) => setForm({ ...form, department: e.target.value })}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                       placeholder="e.g. Engineering"
                     />
@@ -208,7 +208,7 @@ export default function AdminJobs() {
                       id="location"
                       type="text"
                       value={form.location}
-                      onChange={(e) => setForm({...form, location: e.target.value })}
+                      onChange={(e) => setForm({ ...form, location: e.target.value })}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                       placeholder="e.g. Bangalore, Remote"
                     />
@@ -220,7 +220,7 @@ export default function AdminJobs() {
                     <select
                       id="type"
                       value={form.type}
-                      onChange={(e) => setForm({...form, type: e.target.value as JobType })}
+                      onChange={(e) => setForm({ ...form, type: e.target.value as JobType })}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     >
                       <option>Full-time</option>
@@ -238,8 +238,8 @@ export default function AdminJobs() {
                       id="requirements"
                       type="text"
                       value={form.requirements}
-                      onChange={(e) => setForm({...form, requirements: e.target.value })}
-                      placeholder="e.g. 3+ years experience"
+                      onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+                      placeholder="No. Of Positions"
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     />
                   </div>
@@ -252,7 +252,7 @@ export default function AdminJobs() {
                     id="description"
                     rows={4}
                     value={form.description}
-                    onChange={(e) => setForm({...form, description: e.target.value })}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     placeholder="Describe the role, responsibilities, and benefits..."
                   />
@@ -280,7 +280,7 @@ export default function AdminJobs() {
                     disabled={saving}
                     className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gray-800 py-2.5 text-sm font-semibold text-white hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {saving? <Loader2 className="h-4 w-4 animate-spin" /> : editing? 'Update' : 'Create'}
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editing ? 'Update' : 'Create'}
                   </button>
                 </div>
               </form>
@@ -288,7 +288,7 @@ export default function AdminJobs() {
           </div>
         )}
 
-        {loading? (
+        {loading ? (
           <div className="py-12 text-center text-gray-500">Loading jobs...</div>
         ) : (
           <div className="space-y-3">
@@ -310,11 +310,10 @@ export default function AdminJobs() {
                 </div>
                 <div className="ml-4 flex shrink-0 items-center gap-2">
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      job.is_active? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${job.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}
                   >
-                    {job.is_active? 'Active' : 'Closed'}
+                    {job.is_active ? 'Active' : 'Closed'}
                   </span>
                   <button
                     onClick={() => openEdit(job)}
@@ -326,13 +325,12 @@ export default function AdminJobs() {
                   <button
                     onClick={() => toggleActive(job)}
                     disabled={togglingId === job.id}
-                    className={`rounded px-3 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                      job.is_active
+                    className={`rounded px-3 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${job.is_active
                       ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                        : 'bg-green-50 text-green-600 hover:bg-green-100'
-                    }`}
+                      : 'bg-green-50 text-green-600 hover:bg-green-100'
+                      }`}
                   >
-                    {togglingId === job.id? '...' : job.is_active? 'Close' : 'Open'}
+                    {togglingId === job.id ? '...' : job.is_active ? 'Close' : 'Open'}
                   </button>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store'
 import { Link } from 'react-router-dom'
-import { User, Shield, ChevronRight, ShoppingBag, Key, Edit3 } from 'lucide-react'
+import { User, Shield, ChevronRight, ShoppingBag, Key, Edit3, Briefcase } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user } = useAuthStore()
@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const links = [
     { label: 'Edit Profile', href: '/profile/edit', icon: Edit3, desc: 'Update your personal information' },
     { label: 'Change Password', href: '/profile/change-password', icon: Key, desc: 'Update your password' },
+    { label: 'Applied Jobs', href: '/profile/applied-jobs', icon: Briefcase, desc: 'Track your job application status' },
     { label: 'Purchase History', href: '/profile/purchases', icon: ShoppingBag, desc: 'View your policy purchases' },
   ]
 

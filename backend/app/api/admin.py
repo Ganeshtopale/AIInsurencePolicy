@@ -276,6 +276,7 @@ async def list_job_applications(db: AsyncSession = Depends(get_db), _=Depends(ge
             "id": a.id,
             "job_id": a.job_id,
             "job_title": title,
+            "user_id": a.user_id,
             "name": a.name,
             "email": a.email,
             "phone": a.phone,

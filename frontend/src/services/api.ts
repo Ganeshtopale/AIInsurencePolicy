@@ -531,6 +531,8 @@ export interface JobApplication {
   id: number
   job_id: number
   job_title?: string
+  department?: string
+  user_id?: number
   name: string
   email: string
   phone?: string
@@ -573,6 +575,11 @@ export const jobApi = {
     const { data } = await api.post(`/jobs/${jobId}/apply`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    return data
+  },
+
+  getMyApplications: async (): Promise<JobApplication[]> => {
+    const { data } = await api.get<JobApplication[]>('/jobs/my-applications')
     return data
   },
 }

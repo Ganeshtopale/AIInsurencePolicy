@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.api.auth import get_admin_user
+from app.api.auth import get_admin_user, get_current_user
 
 router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
 
@@ -46,6 +46,34 @@ async def list_jobs(db: AsyncSession = Depends(get_db)):
             "created_at": j.created_at.isoformat() if j.created_at else None,
         }
         for j in jobs
+    ]
+
+
+@router.get("/my-applications")
+async def my_applications(db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
+    from app.models.job import JobApplication, Job
+
+    result = await db.execute(
+        select(JobApplication, Job.title, Job.department).join(Job, JobApplication.job_id == Job.id)
+        .where(JobApplication.user_id == current_user.id)
+        .order_by(JobApplication.created_at.desc())
+    )
+    rows = result.all()
+    return [
+        {
+            "id": a.id,
+            "job_id": a.job_id,
+            "job_title": title,
+            "department": department,
+            "name": a.name,
+            "email": a.email,
+            "phone": a.phone,
+            "resume_url": a.resume_url,
+            "cover_letter": a.cover_letter,
+            "status": a.status,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+        }
+        for a, title, department in rows
     ]
 
 
@@ -134,6 +162,7 @@ async def apply_job(
     cover_letter: str = Form(""),
     resume: UploadFile = File(None),
     db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     from app.models.job import Job, JobApplication
 
@@ -154,6 +183,7 @@ async def apply_job(
 
     application = JobApplication(
         job_id=job_id,
+        user_id=current_user.id,
         name=name,
         email=email,
         phone=phone,

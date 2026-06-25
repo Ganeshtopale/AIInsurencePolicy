@@ -26,6 +26,7 @@ const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
 const EditProfile = lazy(() => import('@/pages/EditProfile'))
 const ChangePassword = lazy(() => import('@/pages/ChangePassword'))
 const PurchaseHistory = lazy(() => import('@/pages/PurchaseHistory'))
+const AppliedJobs = lazy(() => import('@/pages/AppliedJobs'))
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
 const About = lazy(() => import('@/pages/About'))
 const Blog = lazy(() => import('@/pages/Blog'))
@@ -73,6 +74,7 @@ function App() {
               <Route path="/profile/edit" element={<EditProfile />} />
               <Route path="/profile/change-password" element={<ChangePassword />} />
               <Route path="/profile/purchases" element={<PurchaseHistory />} />
+              <Route path="/profile/applied-jobs" element={<AppliedJobs />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/policies" element={<AdminPolicies />} />

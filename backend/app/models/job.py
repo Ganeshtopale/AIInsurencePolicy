@@ -24,6 +24,7 @@ class JobApplication(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     job_id: Mapped[int] = mapped_column(Integer, ForeignKey("jobs.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=True)

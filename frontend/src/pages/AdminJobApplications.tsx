@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { adminApi, JobApplication } from '@/services/api'
 import { useAuthStore } from '@/store'
 import { Search, Eye, Download, Mail, Phone, XCircle } from 'lucide-react'
+import ApplicationStatusStepper from '@/components/ApplicationStatusStepper'
 
-type ApplicationStatus = 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired'
+type ApplicationStatus = 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired' | 'interview'
 
 export default function AdminJobApplications() {
   const { user } = useAuthStore()
@@ -71,11 +72,10 @@ export default function AdminJobApplications() {
     pending: 'bg-yellow-100 text-yellow-800',
     reviewed: 'bg-blue-100 text-blue-800',
     shortlisted: 'bg-purple-100 text-purple-800',
+    interview: 'bg-indigo-100 text-indigo-800',
     rejected: 'bg-red-100 text-red-800',
     hired: 'bg-green-100 text-green-800',
   }
-
-  const statusOptions: ApplicationStatus[] = ['pending', 'reviewed', 'shortlisted', 'hired', 'rejected']
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -235,23 +235,13 @@ export default function AdminJobApplications() {
                       </div>
                     )}
                     <div>
-                      <p className="mb-2 text-sm text-gray-400">Status</p>
-                      <div className="flex flex-wrap gap-2">
-                        {statusOptions.map((s) => (
-                          <button
-                            key={s}
-                            onClick={() => updateStatus(selected.id, s)}
-                            disabled={updatingId === selected.id}
-                            className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                              selected.status === s
-                               ? 'bg-gray-800 text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            {updatingId === selected.id && selected.status === s? 'Updating...' : s}
-                          </button>
-                        ))}
-                      </div>
+                      <p className="mb-3 text-sm text-gray-400">Application Progress</p>
+                      <ApplicationStatusStepper
+                        status={selected.status}
+                        interactive={true}
+                        onUpdate={(s) => updateStatus(selected.id, s)}
+                        updating={updatingId === selected.id}
+                      />
                     </div>
                     <div>
                       <p className="text-sm text-gray-400">Applied</p>

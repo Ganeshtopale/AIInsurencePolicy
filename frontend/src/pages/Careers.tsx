@@ -1,17 +1,37 @@
 import { useState, useEffect } from 'react'
-import { MapPin, Clock, ArrowRight, X, Upload, Loader2, CheckCircle, AlertCircle, Briefcase } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { MapPin, Clock, ArrowRight, X, Upload, Loader2, CheckCircle, AlertCircle, Briefcase, FileText, LogIn } from 'lucide-react'
 import { jobApi, Job } from '@/services/api'
+import { useAuthStore } from '@/store'
 
 export default function Careers() {
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuthStore()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [showApply, setShowApply] = useState<Job | null>(null)
   const [showGeneral, setShowGeneral] = useState(false)
+  const [showDetails, setShowDetails] = useState<Job | null>(null)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [pendingJob, setPendingJob] = useState<Job | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', phone: '', cover_letter: '' })
   const [resumeFile, setResumeFile] = useState<File | null>(null)
+
+  const requireAuth = (job: Job, action: 'apply' | 'details') => {
+    if (!isAuthenticated) {
+      setPendingJob(job)
+      setShowLoginPrompt(true)
+      return
+    }
+    if (action === 'apply') {
+      setShowApply(job); setSuccess(false); setError('')
+    } else {
+      setShowDetails(job)
+    }
+  }
 
   useEffect(() => {
     jobApi.listJobs().then(setJobs).catch(() => setJobs([])).finally(() => setLoading(false))
@@ -85,12 +105,20 @@ export default function Careers() {
                   </div>
                   {job.description && <p className="mt-2 text-sm text-gray-600 line-clamp-2">{job.description}</p>}
                 </div>
-                <button
-                  onClick={() => { setShowApply(job); setSuccess(false); setError(''); }}
-                  className="flex items-center gap-1 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 shrink-0"
-                >
-                  Apply <ArrowRight className="h-4 w-4" />
-                </button>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => requireAuth(job, 'details')}
+                    className="flex items-center gap-1 rounded-lg border border-blue-600 px-4 py-2.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+                  >
+                    <FileText className="h-4 w-4" /> Job Details
+                  </button>
+                  <button
+                    onClick={() => requireAuth(job, 'apply')}
+                    className="flex items-center gap-1 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
+                  >
+                    Apply <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -100,13 +128,87 @@ export default function Careers() {
           <h2 className="mb-2 text-2xl font-bold">Don't see the right role?</h2>
           <p className="mb-4">Send us your resume and we'll keep you in mind for future openings.</p>
           <button
-            onClick={() => { setShowGeneral(true); setSuccess(false); setError(''); setShowApply(null); }}
+            onClick={() => { if (!isAuthenticated) { setShowLoginPrompt(true); return } setShowGeneral(true); setSuccess(false); setError(''); setShowApply(null); }}
             className="rounded-lg bg-white px-6 py-2.5 font-semibold text-blue-600 transition hover:bg-gray-100"
           >
             Submit Resume
           </button>
         </div>
       </div>
+
+      {/* Login Prompt Modal */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
+              <LogIn className="h-7 w-7 text-orange-600" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Login Required</h2>
+            <p className="text-sm text-gray-500 mb-6">Please login or create an account to apply for jobs.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLoginPrompt(false)}
+                className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                Cancel
+              </button>
+              <button onClick={() => navigate('/login?redirect=/careers')}
+                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition">
+                Login / Register
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Job Details Modal */}
+      {showDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b px-6 py-4 sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">{showDetails.title}</h2>
+                <p className="text-sm text-gray-500">{showDetails.department} - {showDetails.location}</p>
+              </div>
+              <button onClick={() => setShowDetails(null)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{showDetails.location}</span>
+                <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{showDetails.type}</span>
+              </div>
+
+              {showDetails.description && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+                  <p className="text-sm text-gray-600 whitespace-pre-line">{showDetails.description}</p>
+                </div>
+              )}
+
+              {showDetails.requirements && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Requirements</h3>
+                  <p className="text-sm text-gray-600 whitespace-pre-line">{showDetails.requirements}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => { setShowApply(showDetails); setShowDetails(null); setSuccess(false); setError(''); }}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition"
+                >
+                  Apply Now <ArrowRight className="h-4 w-4" />
+                </button>
+                <button onClick={() => setShowDetails(null)}
+                  className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Apply Modal */}
       {(showApply || showGeneral) && (
